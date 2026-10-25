@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@500;600;700&display=swap');
+
+:root {
+  font-family: 'DM Mono', monospace;
+  color: #302f28;
+  background: #f5f0e5;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #f5f0e5;
+  background-image: radial-gradient(#d9d0bd 0.7px, transparent 0.7px);
+  background-size: 12px 12px;
+}
+
+.game {
+  width: min(100% - 32px, 620px);
+  margin: 0 auto;
+  padding: 48px 0 24px;
+}
+
+.game-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.eyebrow,
+.game-footer {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: #777361;
+}
+
+h1 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(36px, 8vw, 60px);
+  margin: 12px 0;
+  letter-spacing: -2px;
+}
+
+h1 span {
+  color: #c06c4d;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: #777361;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  width: 100%;
+  aspect-ratio: 1;
+  border: 8px solid #fffaf0;
+  outline: 1px solid #d4c7ad;
+  box-shadow: 4px 5px 0 #d9cbb3, 10px 12px 25px #4c40251a;
+  overflow: hidden;
+}
+
+.square {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  aspect-ratio: 1;
+}
+
+.light {
+  background: #f3e6ca;
+}
+
+.dark {
+  background: #9eae8d;
+}
+
+.square span {
+  font-family: 'Segoe UI Symbol', 'DejaVu Sans', serif;
+  font-size: clamp(20px, 6vw, 44px);
+  line-height: 1;
+  filter: drop-shadow(1px 2px 0 #443c3020);
+}
+
+.black-piece {
+  color: #34372f;
+}
+
+.white-piece {
+  color: #fffaf0;
+  -webkit-text-stroke: 1px #575448;
+}
+
+.game-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .game {
+    padding-top: 32px;
+  }
+
+  .board {
+    border-width: 5px;
+  }
+}
