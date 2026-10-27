@@ -12,6 +12,10 @@ const pieceImages: Record<string, string> = {
     'b-r': '/pieces/black-rook.png',
     'w-b': '/pieces/white-bishop.png',
     'b-b': '/pieces/black-bishop.png',
+    'w-n': '/pieces/white-knight.png',
+    'b-n': '/pieces/black-knight.png',
+    'w-p': '/pieces/white-pawn.png',
+    'b-p': '/pieces/black-pawn.png',
 }
 
 export default function PaperPiece({

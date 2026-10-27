@@ -110,7 +110,7 @@ function App() {
                 ].join(' ')}
                 onClick={() => handleSquareClick(square)}
               >
-                {piece && ['k', 'q', 'r', 'b'].includes(piece.type) ? (
+                {piece ? (
                   <PaperPiece type={piece.type} color={piece.color} />
                 ) : (
                   symbol && (
