@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { chess, getLegalMoves, movePiece, undoMove } from './game/chessState'
 import type { Square } from 'chess.js'
 import './App.css'
+import PaperPiece from './components/PaperPiece'
 
 
 function App() {
@@ -109,16 +110,20 @@ function App() {
                 ].join(' ')}
                 onClick={() => handleSquareClick(square)}
               >
-                {symbol && (
-                  <span
-                    className={
-                      piece?.color === 'w'
-                        ? 'white-piece'
-                        : 'black-piece'
-                    }
-                  >
-                    {symbol}
-                  </span>
+                {piece && ['k', 'q', 'r', 'b'].includes(piece.type) ? (
+                  <PaperPiece type={piece.type} color={piece.color} />
+                ) : (
+                  symbol && (
+                    <span
+                      className={
+                        piece?.color === 'w'
+                          ? 'white-piece'
+                          : 'black-piece'
+                      }
+                    >
+                      {symbol}
+                    </span>
+                  )
                 )}
               </button>
             )
