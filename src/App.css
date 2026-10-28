@@ -158,7 +158,7 @@ h1 span {
 .square {
   border: 0;
   padding: 0;
-  cursor: pointer;
+  cursor: url('/cursors/paper-cursor.svg') 9 2, default;
   position: relative;
 }
 
@@ -267,7 +267,7 @@ h1 span {
   padding: 9px 15px;
   font-family: 'DM Mono', monospace;
   font-size: 12px;
-  cursor: pointer;
+  cursor: url('/cursors/paper-pointer.svg') 12 2, pointer;
   box-shadow: 2px 2px 0 #d9cbb3;
   transition: background 160ms ease, transform 160ms ease;
 }
@@ -281,4 +281,32 @@ h1 span {
   opacity: 0.45;
   cursor: not-allowed;
   box-shadow: none;
+}
+
+
+:root,
+body {
+  cursor: url('/cursors/paper-cursor.svg') 9 2, auto;
+}
+
+/* Interactive elements use the pointing-hand cursor */
+button,
+a,
+[role='button'],
+select,
+input[type='range'] {
+  cursor: url('/cursors/paper-pointer.svg') 12 2, pointer;
+}
+
+/* Clickable chess pieces and squares where moves are legal */
+.square:has(.paper-piece),
+.square.legal-move,
+.square.selected {
+  cursor: url('/cursors/paper-pointer.svg') 12 2, pointer;
+}
+
+/* Dragging cursor: configured for when a piece is actively being dragged (game currently uses click-to-move) */
+.square.dragging,
+[data-dragging='true'] {
+  cursor: url('/cursors/paper-drag.svg') 18 14, grabbing;
 }
