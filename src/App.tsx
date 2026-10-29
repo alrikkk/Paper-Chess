@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import { chess, getLegalMoves, movePiece, undoMove } from './game/chessState'
 import type { Square } from 'chess.js'
@@ -6,19 +7,19 @@ import PaperPiece from './components/PaperPiece'
 
 type Screen = 'title' | 'mode' | 'game' | 'settings'
 
-
 function App() {
-
   const [screen, setScreen] = useState<Screen>('title')
 
-  // Settings
+  const [gameMode, setGameMode] = useState<'two-player' | 'bot'>('two-player')
+  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy')
+  const [botThinking, setBotThinking] = useState(false)
+  const [botError, setBotError] = useState('')
   const [masterVolume, setMasterVolume] = useState(70)
   const [moveVolume, setMoveVolume] = useState(60)
   const [moveAnimations, setMoveAnimations] = useState(true)
   const [legalHints, setLegalHints] = useState(true)
   const [showCoordinates, setShowCoordinates] = useState(true)
 
-  // Chess state
   const [selected, setSelected] = useState<Square | null>(null)
   const [, setPositionVersion] = useState(0)
 
@@ -29,13 +30,63 @@ function App() {
       ? getLegalMoves(selected)
       : []
 
-  function handleSquareClick(square: Square) {
+  async function handleSquareClick(square: Square) {
+    if (botThinking) return
+
+    // Only allow White to move when playing against the bot.
+    if (gameMode === 'bot' && chess.turn() !== 'w') return
+
     if (selected) {
       const move = movePiece(selected, square)
 
       if (move) {
         setSelected(null)
         setPositionVersion((version) => version + 1)
+
+        // Ask the bot to respond after a successful White move.
+        if (gameMode === 'bot' && !chess.isGameOver()) {
+          setBotThinking(true)
+
+          try {
+            const response = await fetch(
+              'http://127.0.0.1:8000/best-move',
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  fen: chess.fen(),
+                  difficulty,
+                }),
+              },
+            )
+
+            if (!response.ok) {
+              throw new Error('The chess engine could not find a move.')
+            }
+
+            const data: { move: string } = await response.json()
+
+            chess.move({
+              from: data.move.slice(0, 2),
+              to: data.move.slice(2, 4),
+              ...(data.move.length > 4
+                ? { promotion: data.move[4] }
+                : {}),
+            })
+
+            setPositionVersion((version) => version + 1)
+          } catch (error) {
+            console.error('Bot move failed:', error)
+            setBotError(
+              error instanceof Error ? error.message : 'The bot move failed.',
+            )
+          } finally {
+            setBotThinking(false)
+          }
+        }
+
         return
       }
     }
@@ -48,6 +99,7 @@ function App() {
       setSelected(null)
     }
   }
+
   function getGameStatus() {
     if (chess.isCheckmate()) {
       return chess.turn() === 'w'
@@ -92,14 +144,22 @@ function App() {
 
           <div className="title-actions">
             <button
-              className="title-button title-button-primary"
+              className={
+                gameMode === 'two-player'
+                  ? 'title-button title-button-primary'
+                  : 'title-button title-button-secondary'
+              }
               onClick={() => setScreen('mode')}
             >
               Play
             </button>
 
             <button
-              className="title-button title-button-secondary"
+              className={
+                gameMode === 'bot'
+                  ? 'title-button title-button-primary'
+                  : 'title-button title-button-secondary'
+              }
               onClick={() => setScreen('settings')}
             >
               Settings
@@ -126,20 +186,65 @@ function App() {
             Every kingdom needs a worthy opponent.
           </p>
 
+          {gameMode === 'bot' && (
+            <div className="bot-difficulty">
+              <p className="title-eyebrow">BOT DIFFICULTY</p>
+
+              <div className="difficulty-options">
+                {(['easy', 'medium', 'hard'] as const).map((level) => (
+                  <button
+                    key={level}
+                    type="button"
+                    className={
+                      difficulty === level
+                        ? 'title-button title-button-primary'
+                        : 'title-button title-button-secondary'
+                    }
+                    onClick={() => setDifficulty(level)}
+                  >
+                    {level.charAt(0).toUpperCase() + level.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+
           <div className="mode-actions">
-            <button
-              className="title-button title-button-primary"
-              onClick={() => setScreen('game')}
-            >
-              You vs You
-              <span className="mode-description">
-                Two sides. Your strategy.
-              </span>
-            </button>
+            {gameMode === 'two-player' && (
+              <button
+                className="title-button title-button-primary"
+                onClick={() => {
+                  setGameMode('two-player')
+                  setScreen('game')
+                }}
+              >
+                You vs You
+                <span className="mode-description">
+                  Two sides. Your strategy.
+                </span>
+              </button>
+            )}
+
+            {gameMode === 'bot' && (
+              <button
+                className="title-button title-button-secondary"
+                onClick={() => setGameMode('two-player')}
+              >
+                You vs You
+                <span className="mode-description">
+                  Two sides. Your strategy.
+                </span>
+              </button>
+            )}
 
             <button
-              className="title-button title-button-secondary"
-              onClick={() => setScreen('game')}
+              className={
+                gameMode === 'bot'
+                  ? 'title-button title-button-primary'
+                  : 'title-button title-button-secondary'
+              }
+              onClick={() => setGameMode('bot')}
             >
               You vs Bot
               <span className="mode-description">
@@ -147,6 +252,16 @@ function App() {
               </span>
             </button>
           </div>
+
+
+          {gameMode === 'bot' && (
+            <button
+              className="title-button title-button-primary"
+              onClick={() => setScreen('game')}
+            >
+              Start Game
+            </button>
+          )}
 
           <button
             className="back-button"
@@ -158,7 +273,6 @@ function App() {
       </main>
     )
   }
-
 
   if (screen === 'settings') {
     return (
@@ -265,7 +379,6 @@ function App() {
     )
   }
 
-
   return (
     <main className="game">
       <header className="game-header">
@@ -276,120 +389,155 @@ function App() {
         </p>
       </header>
 
-      <section className="board" aria-label="Chessboard">
-        {board.map((row, rowIndex) =>
-          row.map((piece, columnIndex) => {
-            const square = (
-              `${String.fromCharCode(97 + columnIndex)}${8 - rowIndex}`
-            ) as Square
-
-            const isLight = (rowIndex + columnIndex) % 2 === 1
-            const isSelected = selected === square
-            const isLegal = legalMoves.some(
-              (move) => move.to === square,
-            )
-
-            let symbol = ''
-
-            if (piece) {
-              const symbols = {
-                wk: '♔', wq: '♕', wr: '♖',
-                wb: '♗', wn: '♘', wp: '♙',
-                bk: '♚', bq: '♛', br: '♜',
-                bb: '♝', bn: '♞', bp: '♟',
-              }
-
-              symbol =
-                symbols[`${piece.color}${piece.type}` as keyof typeof symbols]
-            }
-
-            return (
-              <button
-                key={square}
-                type="button"
-                aria-label={`${square}${piece ? ` ${piece.color} ${piece.type}` : ''}`}
-                className={[
-                  'square',
-                  isLight ? 'light' : 'dark',
-                  isSelected ? 'selected' : '',
-                  isLegal ? 'legal-move' : '',
-                ].join(' ')}
-                onClick={() => handleSquareClick(square)}
-              >
-                {piece ? (
-                  <PaperPiece type={piece.type} color={piece.color} />
-                ) : (
-                  symbol && (
-                    <span
-                      className={
-                        piece?.color === 'w'
-                          ? 'white-piece'
-                          : 'black-piece'
-                      }
-                    >
-                      {symbol}
-                    </span>
-                  )
-                )}
-              </button>
-            )
-          }),
-        )}
-      </section>
-
-      <aside className='move-history'>
-        <div className='history-header'>
-          <h2>Move History</h2>
-          <span>{history.length} moves</span>
-        </div>
-        {history.length === 0 ? (
-          <p className="history-empty">Your Game Begins here.</p>
-        ) : (
-          <ol>
-            {Array.from(
-              { length: Math.ceil(history.length / 2) },
-              (_, index) => (
-                <li key={index}>
-                  <span>{index + 1}.</span>
-                  <span>{history[index * 2]}</span>
-                  <span>{history[index * 2 + 1] ?? '-'}</span>
-                </li>
-              ),
+      <div className="game-layout">
+        <div className="game-board-area">
+          <div className="board-with-coordinates">
+            {showCoordinates && (
+              <div className="rank-coordinates" aria-hidden="true">
+                {[8, 7, 6, 5, 4, 3, 2, 1].map((rank) => (
+                  <span key={rank}>{rank}</span>
+                ))}
+              </div>
             )}
-          </ol>
-        )}
-      </aside>
 
-      <footer className="game-footer">
-        <span>
-          {getGameStatus()}
-        </span>
-        <button
-          type="button"
-          onClick={() => {
-            const move = undoMove()
+            <section className="board" aria-label="Chessboard">
+              {board.map((row, rowIndex) =>
+                row.map((piece, columnIndex) => {
+                  const square = (
+                    `${String.fromCharCode(97 + columnIndex)}${8 - rowIndex}`
+                  ) as Square
 
-            if (move) {
-              setSelected(null)
-              setPositionVersion((version) => version + 1)
-            }
-          }}
-          disabled={history.length === 0}
-        >
-          Undo move
-        </button>
+                  const isLight = (rowIndex + columnIndex) % 2 === 1
+                  const isSelected = selected === square
+                  const isLegal = legalMoves.some(
+                    (move) => move.to === square,
+                  )
 
-        <button
-          type="button"
-          onClick={() => {
-            chess.reset()
-            setSelected(null)
-            setPositionVersion((version) => version + 1)
-          }}
-        >
-          Restart game
-        </button>
-      </footer>
+                  let symbol = ''
+
+                  if (piece) {
+                    const symbols = {
+                      wk: '♔', wq: '♕', wr: '♖',
+                      wb: '♗', wn: '♘', wp: '♙',
+                      bk: '♚', bq: '♛', br: '♜',
+                      bb: '♝', bn: '♞', bp: '♟',
+                    }
+
+                    symbol =
+                      symbols[`${piece.color}${piece.type}` as keyof typeof symbols]
+                  }
+
+                  return (
+                    <button
+                      key={square}
+                      type="button"
+                      aria-label={`${square}${piece ? ` ${piece.color} ${piece.type}` : ''}`}
+                      className={[
+                        'square',
+                        isLight ? 'light' : 'dark',
+                        isSelected ? 'selected' : '',
+                        isLegal ? 'legal-move' : '',
+                      ].join(' ')}
+                      onClick={() => handleSquareClick(square)}
+                    >
+                      {piece ? (
+                        <PaperPiece type={piece.type} color={piece.color} />
+                      ) : (
+                        symbol && (
+                          <span
+                            className={
+                              piece?.color === 'w'
+                                ? 'white-piece'
+                                : 'black-piece'
+                            }
+                          >
+                            {symbol}
+                          </span>
+                        )
+                      )}
+                    </button>
+                  )
+                }),
+              )}
+            </section>
+          </div>
+
+          {showCoordinates && (
+            <div className="file-coordinates" aria-hidden="true">
+              {'abcdefgh'.split('').map((file) => (
+                <span key={file}>{file}</span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="game-sidebar">
+          <aside className="move-history">
+            <div className="history-header">
+              <h2>Move History</h2>
+              <span>{history.length} moves</span>
+            </div>
+
+            {history.length === 0 ? (
+              <p className="history-empty">Your Game Begins here.</p>
+            ) : (
+              <ol>
+                {Array.from(
+                  { length: Math.ceil(history.length / 2) },
+                  (_, index) => (
+                    <li key={index}>
+                      <span>{index + 1}.</span>
+                      <span>{history[index * 2]}</span>
+                      <span>{history[index * 2 + 1] ?? '-'}</span>
+                    </li>
+                  ),
+                )}
+              </ol>
+            )}
+          </aside>
+
+          <footer className="game-footer">
+            <span>
+              {botThinking
+                ? 'BOT THINKING…'
+                : botError || getGameStatus()}
+            </span>
+
+            <button
+              type="button"
+              onClick={() => setScreen('title')}
+            >
+              ← Back to title
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                const move = undoMove()
+
+                if (move) {
+                  setSelected(null)
+                  setPositionVersion((version) => version + 1)
+                }
+              }}
+              disabled={history.length === 0}
+            >
+              Undo move
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                chess.reset()
+                setSelected(null)
+                setPositionVersion((version) => version + 1)
+              }}
+            >
+              Restart game
+            </button>
+          </footer>
+        </div>
+      </div>
     </main>
   )
 }
