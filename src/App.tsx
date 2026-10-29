@@ -4,8 +4,12 @@ import type { Square } from 'chess.js'
 import './App.css'
 import PaperPiece from './components/PaperPiece'
 
+type Screen = 'title' | 'mode' | 'game' | 'settings'
+
 
 function App() {
+
+  const [screen, setScreen] = useState<Screen>('title')
   const [selected, setSelected] = useState<Square | null>(null)
   const [, setPositionVersion] = useState(0)
 
@@ -58,6 +62,91 @@ function App() {
     return chess.turn() === 'w'
       ? 'WHITE TO MOVE'
       : 'BLACK TO MOVE'
+  }
+
+  if (screen === 'title') {
+    return (
+      <main className="title-screen">
+        <div className="title-paper">
+          <p className="title-eyebrow">A LITTLE GAME OF STRATEGY</p>
+
+          <img
+            className="title-logo"
+            src="/paper-chess-logo.png"
+            alt="Paper Chess"
+          />
+
+          <p className="title-subtitle">
+            A handmade kingdom, one move at a time.
+          </p>
+
+          <div className="title-actions">
+            <button
+              className="title-button title-button-primary"
+              onClick={() => setScreen('mode')}
+            >
+              Play
+            </button>
+
+            <button
+              className="title-button title-button-secondary"
+              onClick={() => setScreen('settings')}
+            >
+              Settings
+            </button>
+          </div>
+
+          <p className="title-footer">
+            CRAFTED ON PAPER · PLAYED IN STRATEGY
+          </p>
+        </div>
+      </main>
+    )
+  }
+
+  if (screen === 'mode') {
+    return (
+      <main className="title-screen">
+        <div className="title-paper">
+          <p className="title-eyebrow">CHOOSE YOUR OPPONENT</p>
+
+          <h1 className="mode-heading">How will you play?</h1>
+
+          <p className="title-subtitle">
+            Every kingdom needs a worthy opponent.
+          </p>
+
+          <div className="mode-actions">
+            <button
+              className="title-button title-button-primary"
+              onClick={() => setScreen('game')}
+            >
+              You vs You
+              <span className="mode-description">
+                Two sides. Your strategy.
+              </span>
+            </button>
+
+            <button
+              className="title-button title-button-secondary"
+              onClick={() => setScreen('game')}
+            >
+              You vs Bot
+              <span className="mode-description">
+                Challenge the machine.
+              </span>
+            </button>
+          </div>
+
+          <button
+            className="back-button"
+            onClick={() => setScreen('title')}
+          >
+            ← Back to title
+          </button>
+        </div>
+      </main>
+    )
   }
 
   return (
