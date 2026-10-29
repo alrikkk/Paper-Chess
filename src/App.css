@@ -527,3 +527,81 @@ input[type='range'] {
     transition: none;
   }
 }
+
+/* Settings Screen */
+
+.settings-paper {
+  width: min(100%, 680px);
+}
+
+.settings-list {
+  width: 100%;
+  max-width: 500px;
+  margin-top: 12px;
+  border-top: 1px dashed #d8c7a6;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 17px 0;
+  border-bottom: 1px dashed #d8c7a6;
+  text-align: left;
+  cursor: default;
+}
+
+.setting-row strong,
+.setting-row small {
+  display: block;
+}
+
+.setting-row strong {
+  font-size: 12px;
+  font-weight: 500;
+  color: #34352d;
+}
+
+.setting-row small {
+  margin-top: 5px;
+  font-size: 10px;
+  line-height: 1.5;
+  color: #777361;
+}
+
+.setting-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.setting-control input[type='range'] {
+  width: 110px;
+  accent-color: #8d6549;
+  cursor: pointer;
+}
+
+.setting-row input[type='checkbox'] {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  accent-color: #8d6549;
+  cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .setting-rwo {
+    gap: 12px;
+  }
+
+  .setting-control input[type='range'] {
+    width: 80px;
+  }
+
+  .setting-row strong {
+    font-size: 11px;
+  }
+}

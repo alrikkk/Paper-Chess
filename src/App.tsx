@@ -10,14 +10,24 @@ type Screen = 'title' | 'mode' | 'game' | 'settings'
 function App() {
 
   const [screen, setScreen] = useState<Screen>('title')
+
+  // Settings
+  const [masterVolume, setMasterVolume] = useState(70)
+  const [moveVolume, setMoveVolume] = useState(60)
+  const [moveAnimations, setMoveAnimations] = useState(true)
+  const [legalHints, setLegalHints] = useState(true)
+  const [showCoordinates, setShowCoordinates] = useState(true)
+
+  // Chess state
   const [selected, setSelected] = useState<Square | null>(null)
   const [, setPositionVersion] = useState(0)
 
   const board = chess.board()
   const history = chess.history()
-  const legalMoves = selected
-    ? getLegalMoves(selected)
-    : []
+  const legalMoves =
+    selected && legalHints
+      ? getLegalMoves(selected)
+      : []
 
   function handleSquareClick(square: Square) {
     if (selected) {
@@ -148,6 +158,113 @@ function App() {
       </main>
     )
   }
+
+
+  if (screen === 'settings') {
+    return (
+      <main className="title-screen">
+        <div className="title-paper settings-paper">
+          <p className="title-eyebrow">MAKE IT YOUR OWN</p>
+
+          <h1 className="mode-heading">Settings</h1>
+
+          <p className="title-subtitle">
+            Settle in. Make yourself comfortable.
+          </p>
+
+          <div className="settings-list">
+            <label className="setting-row">
+              <span>
+                <strong>Master volume</strong>
+                <small>Overall game audio</small>
+              </span>
+              <span className="setting-control">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={masterVolume}
+                  onChange={(event) =>
+                    setMasterVolume(Number(event.target.value))
+                  }
+                />
+                <span>{masterVolume}%</span>
+              </span>
+            </label>
+
+            <label className="setting-row">
+              <span>
+                <strong>Move sound volume</strong>
+                <small>Sound when a piece moves</small>
+              </span>
+              <span className="setting-control">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={moveVolume}
+                  onChange={(event) =>
+                    setMoveVolume(Number(event.target.value))
+                  }
+                />
+                <span>{moveVolume}%</span>
+              </span>
+            </label>
+
+            <label className="setting-row">
+              <span>
+                <strong>Move animations</strong>
+                <small>Animate pieces between squares</small>
+              </span>
+              <input
+                type="checkbox"
+                checked={moveAnimations}
+                onChange={(event) =>
+                  setMoveAnimations(event.target.checked)
+                }
+              />
+            </label>
+
+            <label className="setting-row">
+              <span>
+                <strong>Legal move hints</strong>
+                <small>Show available moves</small>
+              </span>
+              <input
+                type="checkbox"
+                checked={legalHints}
+                onChange={(event) =>
+                  setLegalHints(event.target.checked)
+                }
+              />
+            </label>
+
+            <label className="setting-row">
+              <span>
+                <strong>Board coordinates</strong>
+                <small>Show ranks and files on the board</small>
+              </span>
+              <input
+                type="checkbox"
+                checked={showCoordinates}
+                onChange={(event) =>
+                  setShowCoordinates(event.target.checked)
+                }
+              />
+            </label>
+          </div>
+
+          <button
+            className="back-button"
+            onClick={() => setScreen('title')}
+          >
+            ← Back to title
+          </button>
+        </div>
+      </main>
+    )
+  }
+
 
   return (
     <main className="game">
