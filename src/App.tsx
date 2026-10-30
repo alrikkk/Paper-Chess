@@ -24,6 +24,15 @@ function App() {
   const [showCoordinates, setShowCoordinates] = useState(true)
 
   const [selected, setSelected] = useState<Square | null>(null)
+  const [draggingFrom, setDraggingFrom] = useState<Square | null>(null)
+  const [dragPosition, setDragPosition] = useState<{
+    x: number
+    y: number
+    size: number
+  } | null>(null)
+
+  const boardRef = useRef<HTMLElement | null>(null)
+  const suppressClickRef = useRef(false)
   const [, setPositionVersion] = useState(0)
 
   const board = chess.board()
@@ -94,6 +103,74 @@ function App() {
       console.warn(`Could not play ${sound} sound:`, error)
     })
   }
+
+
+  function handleSquarePointerDown(
+    square: Square,
+    event: React.PointerEvent<HTMLButtonElement>,
+  ) {
+    if (botThinking) return
+    if (gameMode === 'bot' && chess.turn() !== 'w') return
+
+    const piece = chess.get(square)
+
+    if (piece && piece.color === chess.turn()) {
+      const boardElement = boardRef.current
+      if (!boardElement) return
+
+      const rect = boardElement.getBoundingClientRect()
+
+      setDraggingFrom(square)
+      setSelected(square)
+
+      setDragPosition({
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+        size: rect.width / 8,
+      })
+
+      boardElement.setPointerCapture(event.pointerId)
+    }
+  }
+
+  function handleBoardPointerMove(
+    event: React.PointerEvent<HTMLElement>,
+  ) {
+    if (!draggingFrom || !boardRef.current) return
+
+    const rect = boardRef.current.getBoundingClientRect()
+
+    setDragPosition((current) => {
+      if (!current) return null
+
+      return {
+        ...current,
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      }
+    })
+  }
+
+  function handleBoardPointerUp(
+    event: React.PointerEvent<HTMLElement>,
+  ) {
+    if (!draggingFrom) return
+
+    const target = document
+      .elementFromPoint(event.clientX, event.clientY)
+      ?.closest('[data-square]')
+
+    const destination = target?.getAttribute('data-square') as Square | null
+
+    if (destination && destination !== draggingFrom) {
+      suppressClickRef.current = true
+      void handleSquareClick(destination)
+    }
+
+    setDraggingFrom(null)
+    setDragPosition(null)
+  }
+
 
   async function handleSquareClick(square: Square) {
     if (botThinking) return
@@ -514,7 +591,18 @@ function App() {
               </div>
             )}
 
-            <section className="board" aria-label="Chessboard">
+            <section
+              ref={boardRef}
+              className="board"
+              aria-label="Chessboard"
+              data-dragging={draggingFrom !== null}
+              onPointerMove={handleBoardPointerMove}
+              onPointerUp={handleBoardPointerUp}
+              onPointerCancel={() => {
+                setDraggingFrom(null)
+                setDragPosition(null)
+              }}
+            >
               {board.map((row, rowIndex) =>
                 row.map((piece, columnIndex) => {
                   const square = (
@@ -545,6 +633,7 @@ function App() {
                     <button
                       key={square}
                       type="button"
+                      data-square={square}
                       aria-label={`${square}${piece ? ` ${piece.color} ${piece.type}` : ''}`}
                       className={[
                         'square',
@@ -552,27 +641,47 @@ function App() {
                         isSelected ? 'selected' : '',
                         isLegal ? 'legal-move' : '',
                       ].join(' ')}
-                      onClick={() => handleSquareClick(square)}
+                      onPointerDown={(event) => handleSquarePointerDown(square, event)}
+                      onClick={() => {
+                        if (suppressClickRef.current) {
+                          suppressClickRef.current = false
+                          return
+                        }
+
+                        handleSquareClick(square)
+                      }}
                     >
                       {piece ? (
-                        <PaperPiece type={piece.type} color={piece.color} />
-                      ) : (
-                        symbol && (
-                          <span
-                            className={
-                              piece?.color === 'w'
-                                ? 'white-piece'
-                                : 'black-piece'
-                            }
-                          >
-                            {symbol}
-                          </span>
+                        draggingFrom !== square && (
+                          <PaperPiece type={piece.type} color={piece.color} />
                         )
-                      )}
+                      ) : null}
                     </button>
                   )
                 }),
               )}
+              {draggingFrom && dragPosition && (() => {
+                const draggedPiece = chess.get(draggingFrom)
+
+                if (!draggedPiece) return null
+
+                return (
+                  <div
+                    className="dragged-piece"
+                    style={{
+                      left: dragPosition.x,
+                      top: dragPosition.y,
+                      width: dragPosition.size,
+                      height: dragPosition.size,
+                    }}
+                  >
+                    <PaperPiece
+                      type={draggedPiece.type}
+                      color={draggedPiece.color}
+                    />
+                  </div>
+                )
+              })()}
             </section>
           </div>
 

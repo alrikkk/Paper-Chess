@@ -340,9 +340,17 @@ input[type='range'] {
 }
 
 /* Dragging cursor: configured for when a piece is actively being dragged (game currently uses click-to-move) */
-.square.dragging,
-[data-dragging='true'] {
+.board[data-dragging='true'],
+.board[data-dragging='true'] .square {
   cursor: url('/cursors/paper-drag.svg') 18 14, grabbing;
+}
+
+.board[data-dragging='true'] .paper-piece {
+  pointer-events: none;
+}
+
+.square {
+  touch-action: none;
 }
 
 .mode-heading {
@@ -1001,5 +1009,48 @@ input[type='range'] {
 
   .title-screen .mode-actions .title-button {
     width: 100%;
+  }
+}
+
+.dragged-piece {
+  position: absolute;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  filter: drop-shadow(0 5px 4px rgba(61, 43, 28, 0.25));
+}
+
+.dragged-piece .paper-piece {
+  width: 94%;
+  height: 94%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* Improve spacing in the game header */
+.game-header h1 {
+  line-height: 1.2;
+  margin-bottom: 18px;
+}
+
+.game-header .subtitle {
+  margin-top: 0;
+  line-height: 1.6;
+}
+
+@media (min-width: 701px) {
+  .game {
+    padding-top: 20px;
+  }
+
+  .game-header {
+    margin-bottom: 20px;
+  }
+
+  .game-board-area .board {
+    max-width: min(620px, calc(100vh - 300px));
   }
 }
