@@ -11,6 +11,7 @@ function App() {
   const [screen, setScreen] = useState<Screen>('title')
 
   const [gameMode, setGameMode] = useState<'two-player' | 'bot'>('two-player')
+  const [theme, setTheme] = useState<'default' | 'brainrot'>('default')
   const [playerColor, setPlayerColor] = useState<'w' | 'b'>('w')
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy')
   const [botThinking, setBotThinking] = useState(false)
@@ -343,6 +344,21 @@ function App() {
           <p className="title-footer">
             CRAFTED ON PAPER · PLAYED IN STRATEGY
           </p>
+
+          <div className="theme-selector">
+            <label htmlFor="theme-select">THEME</label>
+
+            <select
+              id="theme-select"
+              value={theme}
+              onChange={(event) =>
+                setTheme(event.target.value as 'default' | 'brainrot')
+              }
+            >
+              <option value="default">Default</option>
+              <option value="brainrot">Brainrot</option>
+            </select>
+          </div>
         </div>
       </main>
     )
