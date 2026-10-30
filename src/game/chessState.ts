@@ -1,6 +1,9 @@
 import { Chess, type Square } from 'chess.js'
 
 export const chess = new Chess()
+export function resetGame() {
+    chess.reset()
+}
 
 export function getLegalMoves(square: Square) {
     return chess.moves({

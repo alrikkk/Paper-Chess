@@ -1,6 +1,6 @@
 
-import { useState } from 'react'
-import { chess, getLegalMoves, movePiece, undoMove } from './game/chessState'
+import { useEffect, useRef, useState } from 'react'
+import { chess, getLegalMoves, movePiece, undoMove, resetGame } from './game/chessState'
 import type { Square } from 'chess.js'
 import './App.css'
 import PaperPiece from './components/PaperPiece'
@@ -13,9 +13,12 @@ function App() {
   const [gameMode, setGameMode] = useState<'two-player' | 'bot'>('two-player')
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy')
   const [botThinking, setBotThinking] = useState(false)
-  const [botError, setBotError] = useState('')
+  const [botError, setBotError] = useState<string | null>(null)
   const [masterVolume, setMasterVolume] = useState(70)
   const [moveVolume, setMoveVolume] = useState(60)
+  const [musicVolume, setMusicVolume] = useState(35)
+
+  const bgMusicRef = useRef<HTMLAudioElement | null>(null)
   const [moveAnimations, setMoveAnimations] = useState(true)
   const [legalHints, setLegalHints] = useState(true)
   const [showCoordinates, setShowCoordinates] = useState(true)
@@ -24,11 +27,73 @@ function App() {
   const [, setPositionVersion] = useState(0)
 
   const board = chess.board()
+
+  useEffect(() => {
+    const audio = new Audio('/audio/bg-music.mp3')
+
+    audio.loop = true
+    audio.volume = 0
+
+    bgMusicRef.current = audio
+
+    return () => {
+      audio.pause()
+      bgMusicRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    const audio = bgMusicRef.current
+
+    if (!audio) return
+
+    const targetVolume = screen === 'title' ? (masterVolume / 100) * (musicVolume / 100) : 0
+    if (screen === 'title') {
+      audio.play().catch((error) => {
+        console.warn('Background music could not start:', error)
+      })
+    }
+
+    const startVolume = audio.volume
+    const startTime = performance.now()
+    const duration = 2000
+
+    const fadeInterval = window.setInterval(() => {
+      const elapsed = performance.now() - startTime
+      const progress = Math.min(elapsed / duration, 1)
+
+      audio.volume = startVolume + (targetVolume - startVolume) * progress
+
+      if (progress >= 1) {
+        window.clearInterval(fadeInterval)
+
+        if (targetVolume === 0) {
+          audio.pause()
+        }
+      }
+    }, 50)
+
+    return () => {
+      window.clearInterval(fadeInterval)
+    }
+  }, [screen, masterVolume, musicVolume])
+
+
   const history = chess.history()
   const legalMoves =
     selected && legalHints
       ? getLegalMoves(selected)
       : []
+
+  function playSound(sound: 'move' | 'capture' | 'check' | 'game-end') {
+    const audio = new Audio(`/audio/${sound}.wav`)
+
+    audio.volume = (masterVolume / 100) * (moveVolume / 100)
+
+    audio.play().catch((error) => {
+      console.warn(`Could not play ${sound} sound:`, error)
+    })
+  }
 
   async function handleSquareClick(square: Square) {
     if (botThinking) return
@@ -40,6 +105,16 @@ function App() {
       const move = movePiece(selected, square)
 
       if (move) {
+        const sound = chess.isGameOver()
+          ? 'game-end'
+          : chess.isCheck()
+            ? 'check'
+            : move.captured
+              ? 'capture'
+              : 'move'
+
+        playSound(sound)
+
         setSelected(null)
         setPositionVersion((version) => version + 1)
 
@@ -68,13 +143,25 @@ function App() {
 
             const data: { move: string } = await response.json()
 
-            chess.move({
+            const botMove = chess.move({
               from: data.move.slice(0, 2),
               to: data.move.slice(2, 4),
               ...(data.move.length > 4
                 ? { promotion: data.move[4] }
                 : {}),
             })
+
+            if (botMove) {
+              const sound = chess.isGameOver()
+                ? 'game-end'
+                : chess.isCheck()
+                  ? 'check'
+                  : botMove.captured
+                    ? 'capture'
+                    : 'move'
+
+              playSound(sound)
+            }
 
             setPositionVersion((version) => version + 1)
           } catch (error) {
@@ -215,6 +302,9 @@ function App() {
               <button
                 className="title-button title-button-primary"
                 onClick={() => {
+                  resetGame()
+                  setSelected(null)
+                  setBotError(null)
                   setGameMode('two-player')
                   setScreen('game')
                 }}
@@ -257,7 +347,12 @@ function App() {
           {gameMode === 'bot' && (
             <button
               className="title-button title-button-primary"
-              onClick={() => setScreen('game')}
+              onClick={() => {
+                resetGame()
+                setSelected(null)
+                setBotError(null)
+                setScreen('game')
+              }}
             >
               Start Game
             </button>
@@ -322,6 +417,25 @@ function App() {
                   }
                 />
                 <span>{moveVolume}%</span>
+              </span>
+            </label>
+            <label className="setting-row">
+              <span>
+                <strong>Background music</strong>
+                <small>Music during gameplay</small>
+              </span>
+
+              <span className="setting-control">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={musicVolume}
+                  onChange={(event) =>
+                    setMusicVolume(Number(event.target.value))
+                  }
+                />
+                <span>{musicVolume}%</span>
               </span>
             </label>
 
