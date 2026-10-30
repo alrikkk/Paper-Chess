@@ -11,6 +11,7 @@ function App() {
   const [screen, setScreen] = useState<Screen>('title')
 
   const [gameMode, setGameMode] = useState<'two-player' | 'bot'>('two-player')
+  const [playerColor, setPlayerColor] = useState<'w' | 'b'>('w')
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy')
   const [botThinking, setBotThinking] = useState(false)
   const [botError, setBotError] = useState<string | null>(null)
@@ -33,9 +34,10 @@ function App() {
 
   const boardRef = useRef<HTMLElement | null>(null)
   const suppressClickRef = useRef(false)
-  const [, setPositionVersion] = useState(0)
+  const [positionVersion, setPositionVersion] = useState(0)
 
   const board = chess.board()
+  const boardFlipped = playerColor === 'b'
 
   useEffect(() => {
     const audio = new Audio('/audio/bg-music.mp3')
@@ -110,7 +112,7 @@ function App() {
     event: React.PointerEvent<HTMLButtonElement>,
   ) {
     if (botThinking) return
-    if (gameMode === 'bot' && chess.turn() !== 'w') return
+    if (gameMode === 'bot' && chess.turn() !== playerColor) return
 
     const piece = chess.get(square)
 
@@ -171,12 +173,71 @@ function App() {
     setDragPosition(null)
   }
 
+  async function requestBotMove() {
+    if (chess.isGameOver()) return
+
+    setBotThinking(true)
+    setBotError(null)
+
+    try {
+      const response = await fetch(
+        'http://127.0.0.1:8000/best-move',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fen: chess.fen(),
+            difficulty,
+          }),
+        },
+      )
+
+      if (!response.ok) {
+        throw new Error('The chess engine could not find a move.')
+      }
+
+      const data: { move: string } = await response.json()
+
+      const botMove = chess.move({
+        from: data.move.slice(0, 2),
+        to: data.move.slice(2, 4),
+        ...(data.move.length > 4
+          ? { promotion: data.move[4] }
+          : {}),
+      })
+
+      if (!botMove) {
+        throw new Error('The bot returned an invalid move.')
+      }
+
+      const sound = chess.isGameOver()
+        ? 'game-end'
+        : chess.isCheck()
+          ? 'check'
+          : botMove.captured
+            ? 'capture'
+            : 'move'
+
+      playSound(sound)
+      setPositionVersion((version) => version + 1)
+    } catch (error) {
+      console.error('Bot move failed:', error)
+      setBotError(
+        error instanceof Error ? error.message : 'The bot move failed.',
+      )
+    } finally {
+      setBotThinking(false)
+    }
+  }
+
 
   async function handleSquareClick(square: Square) {
     if (botThinking) return
 
-    // Only allow White to move when playing against the bot.
-    if (gameMode === 'bot' && chess.turn() !== 'w') return
+    // Only allow the selected player colour to move against the bot.
+    if (gameMode === 'bot' && chess.turn() !== playerColor) return
 
     if (selected) {
       const move = movePiece(selected, square)
@@ -197,58 +258,7 @@ function App() {
 
         // Ask the bot to respond after a successful White move.
         if (gameMode === 'bot' && !chess.isGameOver()) {
-          setBotThinking(true)
-
-          try {
-            const response = await fetch(
-              'http://127.0.0.1:8000/best-move',
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  fen: chess.fen(),
-                  difficulty,
-                }),
-              },
-            )
-
-            if (!response.ok) {
-              throw new Error('The chess engine could not find a move.')
-            }
-
-            const data: { move: string } = await response.json()
-
-            const botMove = chess.move({
-              from: data.move.slice(0, 2),
-              to: data.move.slice(2, 4),
-              ...(data.move.length > 4
-                ? { promotion: data.move[4] }
-                : {}),
-            })
-
-            if (botMove) {
-              const sound = chess.isGameOver()
-                ? 'game-end'
-                : chess.isCheck()
-                  ? 'check'
-                  : botMove.captured
-                    ? 'capture'
-                    : 'move'
-
-              playSound(sound)
-            }
-
-            setPositionVersion((version) => version + 1)
-          } catch (error) {
-            console.error('Bot move failed:', error)
-            setBotError(
-              error instanceof Error ? error.message : 'The bot move failed.',
-            )
-          } finally {
-            setBotThinking(false)
-          }
+          await requestBotMove()
         }
 
         return
@@ -350,6 +360,35 @@ function App() {
             Every kingdom needs a worthy opponent.
           </p>
 
+
+          <div className="side-selection">
+            <p className="title-eyebrow">CHOOSE YOUR SIDE</p>
+
+            <div className="side-options">
+              <button
+                type="button"
+                className={`title-button ${playerColor === 'w'
+                  ? 'title-button-primary'
+                  : 'title-button-secondary'}`}
+                onClick={() => setPlayerColor('w')}
+              >
+                White
+                <span className="mode-description">Play from White's side</span>
+              </button>
+
+              <button
+                type="button"
+                className={`title-button ${playerColor === 'b'
+                  ? 'title-button-primary'
+                  : 'title-button-secondary'}`}
+                onClick={() => setPlayerColor('b')}
+              >
+                Black
+                <span className="mode-description">Play from Black's side</span>
+              </button>
+            </div>
+          </div>
+
           {gameMode === 'bot' && (
             <div className="bot-difficulty">
               <p className="title-eyebrow">BOT DIFFICULTY</p>
@@ -428,7 +467,12 @@ function App() {
                 resetGame()
                 setSelected(null)
                 setBotError(null)
+                setPositionVersion((version) => version + 1)
                 setScreen('game')
+
+                if (playerColor === 'b') {
+                  void requestBotMove()
+                }
               }}
             >
               Start Game
@@ -580,12 +624,16 @@ function App() {
         </p>
       </header>
 
-      <div className="game-layout">
+      <div className={`game-layout ${gameMode === 'bot' && playerColor === 'b' ? 'player-black' : ''
+        }`}>
         <div className="game-board-area">
           <div className="board-with-coordinates">
             {showCoordinates && (
               <div className="rank-coordinates" aria-hidden="true">
-                {[8, 7, 6, 5, 4, 3, 2, 1].map((rank) => (
+                {(boardFlipped
+                  ? [1, 2, 3, 4, 5, 6, 7, 8]
+                  : [8, 7, 6, 5, 4, 3, 2, 1]
+                ).map((rank) => (
                   <span key={rank}>{rank}</span>
                 ))}
               </div>
@@ -603,8 +651,11 @@ function App() {
                 setDragPosition(null)
               }}
             >
-              {board.map((row, rowIndex) =>
-                row.map((piece, columnIndex) => {
+              {Array.from({ length: 8 }, (_, displayRow) =>
+                Array.from({ length: 8 }, (_, displayColumn) => {
+                  const rowIndex = boardFlipped ? 7 - displayRow : displayRow
+                  const columnIndex = boardFlipped ? 7 - displayColumn : displayColumn
+                  const piece = board[rowIndex][columnIndex]
                   const square = (
                     `${String.fromCharCode(97 + columnIndex)}${8 - rowIndex}`
                   ) as Square
@@ -687,9 +738,11 @@ function App() {
 
           {showCoordinates && (
             <div className="file-coordinates" aria-hidden="true">
-              {'abcdefgh'.split('').map((file) => (
-                <span key={file}>{file}</span>
-              ))}
+              {(boardFlipped ? 'hgfedcba' : 'abcdefgh')
+                .split('')
+                .map((file) => (
+                  <span key={file}>{file}</span>
+                ))}
             </div>
           )}
         </div>
