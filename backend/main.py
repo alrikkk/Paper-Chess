@@ -1,4 +1,5 @@
 
+import os
 import random
 
 import chess
@@ -8,12 +9,24 @@ from pydantic import BaseModel, Field
 
 app = FastAPI(title="Paper Chess Engine")
 
+# Support configurable allowed origins from environment variable (comma-separated)
+env_origins = [
+    origin.strip()
+    for origin in os.getenv("ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+
+allowed_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:4173",
+    "http://127.0.0.1:4173",
+    "http://localhost:3000",
+] + env_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

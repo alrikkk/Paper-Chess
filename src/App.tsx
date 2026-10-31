@@ -13,6 +13,11 @@ function getRandomThinkingDelay() {
   return 1000 + Math.random() * 2000
 }
 
+const API_BASE_URL = (
+  (import.meta.env.VITE_API_BASE_URL as string | undefined) ||
+  'http://127.0.0.1:8000'
+).replace(/\/+$/, '')
+
 type Screen = 'title' | 'mode' | 'game' | 'settings'
 
 function App() {
@@ -397,7 +402,7 @@ function App() {
 
     try {
       const response = await fetch(
-        'http://127.0.0.1:8000/best-move',
+        `${API_BASE_URL}/best-move`,
         {
           method: 'POST',
           headers: {
