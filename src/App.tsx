@@ -33,6 +33,11 @@ function App() {
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy')
   const [botThinking, setBotThinking] = useState(false)
   const [botError, setBotError] = useState<string | null>(null)
+
+  type HampterMood = 'idle' | 'thinking' | 'wins' | 'loses'
+
+  const [hampterMood, setHampterMood] = useState<HampterMood>('idle')
+  const [hampterMessage, setHampterMessage] = useState('')
   const [masterVolume, setMasterVolume] = useState(70)
   const [moveVolume, setMoveVolume] = useState(60)
   const [musicVolume, setMusicVolume] = useState(35)
@@ -192,11 +197,97 @@ function App() {
     setDragPosition(null)
   }
 
+  function updateHampterAfterMove(
+    lastMoveBy: 'player' | 'bot', wasCapture = false,
+  ) {
+    if (theme !== 'brainrot' || gameMode !== 'bot') return
+
+    if (chess.isGameOver()) {
+      if (chess.isCheckmate()) {
+        const winner = chess.turn() === 'w' ? 'b' : 'w'
+
+        if (winner === playerColor) {
+          setHampterMood('loses')
+          setHampterMessage('This is rigged. I demand a rematch!'
+
+          )
+        } else {
+          setHampterMood('wins')
+          setHampterMessage('EZ , GET REKT.'
+
+          )
+        }
+      } else {
+        setHampterMood('idle')
+        setHampterMessage(
+          "We'll call it a tie."
+        )
+      }
+      return
+    }
+
+    if (chess.isCheck()) {
+      const hampterColor = playerColor === 'w' ? 'b' : 'w'
+
+      if (chess.turn() === hampterColor) {
+        setHampterMessage('WAIT WHAT??!!')
+      } else {
+        setHampterMessage('Careful... your king is in trouble.')
+      }
+
+      setHampterMood('idle')
+      return
+    }
+
+    if (lastMoveBy === 'bot' && wasCapture) {
+      setHampterMessage('Mine Now.')
+    }
+    else if (lastMoveBy === 'player' && wasCapture) {
+      setHampterMessage('Hey! THAT WAS MINE.')
+    }
+    else if (lastMoveBy === 'bot') {
+      const messages = [
+        'Intresting Move.',
+        'Calculated Obviously.',
+        'You Saw that coming?',
+        'My master plan continues.',
+      ]
+
+      setHampterMessage(
+        messages[Math.floor(Math.random() * messages.length)]
+      )
+    }
+    else {
+      const messages = [
+        'Your Move...',
+        'Hmmm. Intresting.',
+        'I am watching you',
+        'Bold Strategy.',
+      ]
+
+      setHampterMessage(
+        messages[Math.floor(Math.random() * messages.length)]
+      )
+    }
+
+    setHampterMood('idle')
+  }
+
   async function requestBotMove() {
     if (chess.isGameOver()) return
 
     setBotThinking(true)
     setBotError(null)
+
+    if (theme === 'brainrot') {
+      setHampterMood('thinking')
+      setHampterMessage('Hmm... let me think.')
+
+      const thinkingDelay = 1000 + Math.random() * 2000
+
+      await new Promise((resolve) => window.setTimeout(resolve, thinkingDelay),
+      )
+    }
 
     try {
       const response = await fetch(
@@ -241,6 +332,7 @@ function App() {
 
       playSound(sound)
       setPositionVersion((version) => version + 1)
+      updateHampterAfterMove('bot', Boolean(botMove.captured))
     } catch (error) {
       console.error('Bot move failed:', error)
       setBotError(
@@ -248,6 +340,10 @@ function App() {
       )
     } finally {
       setBotThinking(false)
+
+      if (theme === 'brainrot' && !chess.isGameOver()) {
+        setHampterMood('idle')
+      }
     }
   }
 
@@ -275,11 +371,13 @@ function App() {
         setSelected(null)
         setPositionVersion((version) => version + 1)
 
-        // Ask the bot to respond after a successful White move.
-        if (gameMode === 'bot' && !chess.isGameOver()) {
-          await requestBotMove()
-        }
+        if (gameMode === 'bot') {
+          updateHampterAfterMove('player', Boolean(move.captured))
 
+          if (!chess.isGameOver()) {
+            await requestBotMove()
+          }
+        }
         return
       }
     }
@@ -317,6 +415,24 @@ function App() {
     return chess.turn() === 'w'
       ? 'WHITE TO MOVE'
       : 'BLACK TO MOVE'
+  }
+
+  function getHampterStatus() {
+    if (botError) return 'ERROR'
+    if (botThinking) return 'THINKING'
+
+    if (chess.isCheckmate()) {
+      const winner = chess.turn() === 'w' ? 'b' : 'w'
+      return winner === playerColor ? 'DEFEATED' : 'VICTOR'
+    }
+
+    if (chess.isGameOver()) return 'DRAW'
+
+    if (chess.isCheck() && chess.turn() !== playerColor) {
+      return 'IN CHECK'
+    }
+
+    return 'ALIVE'
   }
 
   if (screen === 'title') {
@@ -396,7 +512,9 @@ function App() {
 
 
           <div className="side-selection">
-            <p className="title-eyebrow">CHOOSE YOUR SIDE</p>
+            <p className="title-eyebrow">
+              {theme === 'brainrot' ? 'CHOOSE YOUR TEAM' : 'CHOOSE YOUR SIDE'}
+            </p>
 
             <div className="side-options">
               <button
@@ -406,8 +524,12 @@ function App() {
                   : 'title-button-secondary'}`}
                 onClick={() => setPlayerColor('w')}
               >
-                White
-                <span className="mode-description">Play from White's side</span>
+                {theme === 'brainrot' ? 'Team Tung Tung' : 'White'}
+                <span className="mode-description">
+                  {theme === 'brainrot'
+                    ? 'Lead the Tung Tung squad.'
+                    : "Play from White's side"}
+                </span>
               </button>
 
               <button
@@ -417,8 +539,12 @@ function App() {
                   : 'title-button-secondary'}`}
                 onClick={() => setPlayerColor('b')}
               >
-                Black
-                <span className="mode-description">Play from Black's side</span>
+                {theme === 'brainrot' ? 'Team Quandale' : 'Black'}
+                <span className="mode-description">
+                  {theme === 'brainrot'
+                    ? 'Join the Quandale squad.'
+                    : "Play from Black's side"}
+                </span>
               </button>
             </div>
           </div>
@@ -455,6 +581,8 @@ function App() {
                   resetGame()
                   setSelected(null)
                   setBotError(null)
+                  setHampterMood('idle')
+                  setHampterMessage('')
                   setGameMode('two-player')
                   setScreen('game')
                 }}
@@ -501,6 +629,8 @@ function App() {
                 resetGame()
                 setSelected(null)
                 setBotError(null)
+                setHampterMood('idle')
+                setHampterMessage('')
                 setPositionVersion((version) => version + 1)
                 setScreen('game')
 
@@ -783,6 +913,32 @@ function App() {
         </div>
 
         <div className="game-sidebar">
+          {theme === 'brainrot' && gameMode === 'bot' && (
+            <section className="hampter-card">
+              <div className="hampter-heading">
+                <div>
+                  <p className="hampter-lable">YOUR OPPONENT</p>
+                  <h2>Hampter</h2>
+                </div>
+                <span className="hampter-status">
+                  {getHampterStatus()}
+                </span>
+              </div>
+
+              <div className="hampter-portrait">
+                <img
+                  src={`/bot/${hampterMood}.` +
+                    (hampterMood === 'thinking' ? 'png' : 'jpeg')}
+                  alt={`Hampter is ${hampterMood}`}
+                />
+              </div>
+
+              <div className="hampter-chat">
+                <span className="hampter-chat-name">Hampter</span>
+                <p>{hampterMessage}</p>
+              </div>
+            </section>
+          )}
           <aside className="move-history">
             <div className="history-header">
               <h2>Move History</h2>
@@ -851,6 +1007,8 @@ function App() {
               onClick={() => {
                 chess.reset()
                 setSelected(null)
+                setHampterMood('idle')
+                setHampterMessage('')
                 setPositionVersion((version) => version + 1)
               }}
             >
