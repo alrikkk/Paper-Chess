@@ -12,9 +12,17 @@ export function getLegalMoves(square: Square) {
     })
 }
 
-export function movePiece(from: Square, to: Square) {
+export function movePiece(
+    from: Square,
+    to: Square,
+    promotion?: 'q' | 'r' | 'b' | 'n',
+) {
     try {
-        return chess.move({ from, to })
+        return chess.move({
+            from,
+            to,
+            ...(promotion ? { promotion } : {}),
+        })
     } catch {
         return null
     }

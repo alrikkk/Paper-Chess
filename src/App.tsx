@@ -1,7 +1,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { chess, getLegalMoves, movePiece, undoMove, resetGame } from './game/chessState'
-import type { Square } from 'chess.js'
+import { SQUARES, type Square } from 'chess.js'
 import './App.css'
 import PaperPiece from './components/PaperPiece'
 
@@ -48,6 +48,13 @@ function App() {
   const [showCoordinates, setShowCoordinates] = useState(true)
 
   const [selected, setSelected] = useState<Square | null>(null)
+
+  type PromotionPiece = 'q' | 'r' | 'b' | 'n'
+  const [pendingPromotion, setPendingPromotion] = useState<{
+    from: Square
+    to: Square
+    color: 'w' | 'b'
+  } | null>(null)
   const [draggingFrom, setDraggingFrom] = useState<Square | null>(null)
   const [dragPosition, setDragPosition] = useState<{
     x: number
@@ -63,7 +70,9 @@ function App() {
   const boardFlipped = playerColor === 'b'
 
   useEffect(() => {
-    const audio = new Audio('/audio/bg-music.mp3')
+    const audio = new Audio(
+      theme === 'brainrot' ? '/audio/brainrot/title-music.mp3' : '/audio/bg-music.mp3'
+    )
 
     audio.loop = true
     audio.volume = 0
@@ -74,7 +83,7 @@ function App() {
       audio.pause()
       bgMusicRef.current = null
     }
-  }, [])
+  }, [theme])
 
   useEffect(() => {
     const audio = bgMusicRef.current
@@ -82,7 +91,7 @@ function App() {
     if (!audio) return
 
     const shouldPlayMusic = screen !== 'game'
-    const targetVolume = shouldPlayMusic ? (masterVolume / 100) * (masterVolume / 100) : 0
+    const targetVolume = shouldPlayMusic ? (masterVolume / 100) * (musicVolume / 100) : 0
 
     if (shouldPlayMusic) {
       audio.play().catch((error) => {
@@ -112,7 +121,7 @@ function App() {
     return () => {
       window.clearInterval(fadeInterval)
     }
-  }, [screen, masterVolume, musicVolume])
+  }, [screen, masterVolume, musicVolume, theme])
 
   const history = chess.history()
   const legalMoves =
@@ -121,12 +130,31 @@ function App() {
       : []
 
   function playSound(sound: 'move' | 'capture' | 'check' | 'game-end') {
-    const audio = new Audio(`/audio/${sound}.wav`)
+    const audioPath =
+      theme === 'brainrot' && sound !== 'game-end'
+        ? `/audio/brainrot/${sound}.wav`
+        : `/audio/${sound}.wav`
+
+    const audio = new Audio(audioPath)
 
     audio.volume = (masterVolume / 100) * (moveVolume / 100)
 
     audio.play().catch((error) => {
       console.warn(`Could not play ${sound} sound:`, error)
+    })
+  }
+
+  function playTeamSound(team: 'tungtung' | 'quandale') {
+    if (theme !== 'brainrot') return
+
+    const audio = new Audio(
+      `/audio/brainrot/team-${team}.mp3`
+    )
+
+    audio.volume = (masterVolume / 100) * (moveVolume / 100)
+
+    audio.play().catch((error) => {
+      console.warn(`Could not play ${team} team sound:`, error)
     })
   }
 
@@ -347,47 +375,80 @@ function App() {
     }
   }
 
-
   async function handleSquareClick(square: Square) {
-    if (botThinking) return
-
-    // Only allow the selected player colour to move against the bot.
+    if (botThinking || pendingPromotion) return
     if (gameMode === 'bot' && chess.turn() !== playerColor) return
 
     if (selected) {
+      const promotionMove = getLegalMoves(selected).some(
+        (move) => move.to === square && move.promotion,
+      )
+
+      if (promotionMove) {
+        setPendingPromotion({
+          from: selected,
+          to: square,
+          color: chess.turn(),
+        })
+
+        setSelected(null)
+        return
+      }
+
       const move = movePiece(selected, square)
 
       if (move) {
-        const sound = chess.isGameOver()
-          ? 'game-end'
-          : chess.isCheck()
-            ? 'check'
-            : move.captured
-              ? 'capture'
-              : 'move'
-
-        playSound(sound)
-
-        setSelected(null)
-        setPositionVersion((version) => version + 1)
-
-        if (gameMode === 'bot') {
-          updateHampterAfterMove('player', Boolean(move.captured))
-
-          if (!chess.isGameOver()) {
-            await requestBotMove()
-          }
-        }
+        await finishPlayerMove(move)
         return
       }
     }
 
     const piece = chess.get(square)
-
     if (piece && piece.color === chess.turn()) {
       setSelected(square)
-    } else {
+    }
+    else {
       setSelected(null)
+    }
+  }
+
+  async function choosePromotion(piece: PromotionPiece) {
+    if (!pendingPromotion) return
+    const move = movePiece(
+      pendingPromotion.from,
+      pendingPromotion.to,
+      piece,
+    )
+
+    if (move) {
+      await finishPlayerMove(move)
+    }
+    else {
+      setPendingPromotion(null)
+    }
+  }
+
+
+  async function finishPlayerMove(move: NonNullable<ReturnType<typeof movePiece>>) {
+    const sound = chess.isGameOver()
+      ? 'game-end'
+      : chess.isCheck()
+        ? 'check'
+        : move.captured
+          ? 'capture'
+          : 'move'
+    playSound(sound)
+
+    setSelected(null)
+    setPendingPromotion(null)
+    setPositionVersion((version) => version + 1)
+
+    if (gameMode === 'bot') {
+      updateHampterAfterMove('player', Boolean(move.captured))
+
+      if (!chess.isGameOver()) {
+        await requestBotMove()
+      }
     }
   }
 
@@ -523,6 +584,7 @@ function App() {
                   ? 'title-button-primary'
                   : 'title-button-secondary'}`}
                 onClick={() => setPlayerColor('w')}
+                onMouseEnter={() => playTeamSound('tungtung')}
               >
                 {theme === 'brainrot' ? 'Team Tung Tung' : 'White'}
                 <span className="mode-description">
@@ -538,6 +600,7 @@ function App() {
                   ? 'title-button-primary'
                   : 'title-button-secondary'}`}
                 onClick={() => setPlayerColor('b')}
+                onMouseEnter={() => playTeamSound('quandale')}
               >
                 {theme === 'brainrot' ? 'Team Quandale' : 'Black'}
                 <span className="mode-description">
@@ -1017,6 +1080,44 @@ function App() {
           </footer>
         </div>
       </div>
+
+      {pendingPromotion && (
+        <div className="promotion-overlay">
+          <section
+            className="promotion-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="promotion-title"
+          >
+            <p className="eyebrow"> A NEW CHAPTER</p>
+            <h2 id="promotion-title">Choose your promotion</h2>
+            <p> Your pawn has reached the other side.</p>
+
+            <div className="promotion-options">
+              {([
+                { type: 'q', label: 'Queen' },
+                { type: 'r', label: 'Rook' },
+                { type: 'b', label: 'Bishop' },
+                { type: 'n', label: 'Knight' },
+              ] as const).map(({ type, label }) => (
+                <button
+                  key={type}
+                  type="button"
+                  className="promotion-option"
+                  onClick={() => void choosePromotion(type)}
+                >
+                  <PaperPiece
+                    type={type}
+                    color={pendingPromotion.color}
+                    theme={theme}
+                  />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
       {showPieceGuide && theme === 'brainrot' && (
         <div
           className="piece-guide-overlay"

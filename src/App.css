@@ -1363,3 +1363,100 @@ input[type='range'] {
     min-height: 42px;
   }
 }
+
+/* the pawn promotion thingy */
+
+.promotion-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(35, 32, 25, 0.65);
+  backdrop-filter: blur(5px);
+}
+
+.promotion-modal {
+  width: min(100%, 480px);
+  padding: 30px;
+  text-align: center;
+  background: #f8f1e4;
+  border: 1px solid #d8c7a6;
+  box-shadow: 6px 8px 0 rgba(30, 25, 18, 0.2);
+}
+
+.promotion-modal .eyebrow {
+  margin: 0 0 10px;
+}
+
+.promotion-modal h2 {
+  margin: 0;
+  color: #34352d;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(24px, 5vw, 32px);
+}
+
+.promotion-modal>p:not(.eyebrow) {
+  margin: 12px 0 24px;
+  color: #777361;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.promotion-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.promotion-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px 6px !important;
+  background: #fffaf0 !important;
+  border: 1px solid #d9cbb3 !important;
+  box-shadow: 2px 3px 0 #d9cbb3 !important;
+}
+
+.promotion-option:hover {
+  background: #eadfc9 !important;
+}
+
+.promotion-option .paper-piece {
+  width: 100%;
+  height: 76px;
+  object-fit: contain;
+}
+
+.promotion-option span {
+  color: #34352d;
+  font-family: 'DM momo', monospace;
+  font-size: 10px;
+}
+
+@media (max-width: 420px) {
+  .promotion-modal {
+    padding: 22px 14px;
+  }
+
+  .promotion-options {
+    gap: 6px;
+  }
+
+  .promotion-option {
+    padding: 10px 3px !important;
+  }
+
+  .promotion-option .paper-piece {
+    height: 60px;
+  }
+
+  .promotion-option span {
+    font-size: 9px;
+  }
+}
