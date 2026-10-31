@@ -1,9 +1,17 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { chess, getLegalMoves, movePiece, undoMove, resetGame } from './game/chessState'
-import { SQUARES, type Square } from 'chess.js'
+import type { Square } from 'chess.js'
 import './App.css'
 import PaperPiece from './components/PaperPiece'
+
+function pickRandomMessage(messages: string[]) {
+  return messages[Math.floor(Math.random() * messages.length)]
+}
+
+function getRandomThinkingDelay() {
+  return 1000 + Math.random() * 2000
+}
 
 type Screen = 'title' | 'mode' | 'game' | 'settings'
 
@@ -68,7 +76,7 @@ function App() {
 
   const boardRef = useRef<HTMLElement | null>(null)
   const suppressClickRef = useRef(false)
-  const [positionVersion, setPositionVersion] = useState(0)
+  const [, setPositionVersion] = useState(0)
 
   const board = chess.board()
   const boardFlipped = playerColor === 'b'
@@ -127,26 +135,87 @@ function App() {
     }
   }, [screen, masterVolume, musicVolume, theme])
 
+  useEffect(() => {
+    if (!showMoaiIntro) return
+
+    const audio = new Audio(`/audio/brainrot/moai-entrance.mp3`)
+    audio.volume = (masterVolume / 100) * (moveVolume / 100)
+
+    audio.play().catch((error) => {
+      console.warn('Could not play moai entrance sound:', error)
+    })
+
+    return () => {
+      audio.pause()
+      audio.currentTime = 0
+    }
+  }, [showMoaiIntro, masterVolume, moveVolume])
+
   const history = chess.history()
+  const verboseHistory = chess.history({ verbose: true })
+
+  const capturedByWhite = verboseHistory.filter(
+    (move) => move.color === 'w' && Boolean(move.captured),
+  )
+
+  const capturedByBlack = verboseHistory.filter(
+    (move) => move.color === 'b' && Boolean(move.captured),
+  )
+
+  function groupCapturedPieces(moves: typeof verboseHistory) {
+    const groups = new Map<
+      NonNullable<(typeof moves)[number]['captured']>,
+      number
+    >()
+
+    moves.forEach((move) => {
+      if (!move.captured) return
+
+      groups.set(move.captured, (groups.get(move.captured) ?? 0) + 1)
+    })
+
+    return Array.from(groups, ([type, count]) => ({ type, count }))
+  }
+
+  const groupedCapturesByWhite = groupCapturedPieces(capturedByWhite)
+  const groupedCapturesByBlack = groupCapturedPieces(capturedByBlack)
   const legalMoves =
     selected && legalHints
       ? getLegalMoves(selected)
       : []
 
+
   function playSound(sound: 'move' | 'capture' | 'check' | 'game-end') {
+    if (theme === 'brainrot' && sound === 'game-end') return
     const audioPath =
       theme === 'brainrot' && sound !== 'game-end'
         ? `/audio/brainrot/${sound}.wav`
         : `/audio/${sound}.wav`
 
     const audio = new Audio(audioPath)
-
     audio.volume = (masterVolume / 100) * (moveVolume / 100)
 
     audio.play().catch((error) => {
       console.warn(`Could not play ${sound} sound:`, error)
     })
   }
+
+  function playBrainrotEndSound(result: 'win' | 'loss') {
+    if (theme !== 'brainrot' || gameMode !== 'bot') return
+
+    const audio = new Audio(
+      result === 'win'
+        ? '/audio/brainrot/player-win.wav'
+        : '/audio/brainrot/bot-loss.wav'
+    )
+
+    audio.volume = (masterVolume / 100) * (moveVolume / 100)
+
+    audio.play().catch((error) => {
+      console.warn(`Could not play Brainrot ${result} sound:`, error)
+    })
+  }
+
 
   function playTeamSound(team: 'tungtung' | 'quandale') {
     if (theme !== 'brainrot') return
@@ -246,11 +315,13 @@ function App() {
         const winner = chess.turn() === 'w' ? 'b' : 'w'
 
         if (winner === playerColor) {
+          playBrainrotEndSound('win')
           setHampterMood('loses')
           setHampterMessage('This is rigged. I demand a rematch!'
 
           )
         } else {
+          playBrainrotEndSound('loss')
           setHampterMood('wins')
           setHampterMessage('EZ , GET REKT.'
 
@@ -292,9 +363,7 @@ function App() {
         'My master plan continues.',
       ]
 
-      setHampterMessage(
-        messages[Math.floor(Math.random() * messages.length)]
-      )
+      setHampterMessage(pickRandomMessage(messages))
     }
     else {
       const messages = [
@@ -304,9 +373,7 @@ function App() {
         'Bold Strategy.',
       ]
 
-      setHampterMessage(
-        messages[Math.floor(Math.random() * messages.length)]
-      )
+      setHampterMessage(pickRandomMessage(messages))
     }
 
     setHampterMood('idle')
@@ -322,7 +389,7 @@ function App() {
       setHampterMood('thinking')
       setHampterMessage('Hmm... let me think.')
 
-      const thinkingDelay = 1000 + Math.random() * 2000
+      const thinkingDelay = getRandomThinkingDelay()
 
       await new Promise((resolve) => window.setTimeout(resolve, thinkingDelay),
       )
@@ -582,6 +649,9 @@ function App() {
                     setShowMoaiIntro(true)
                   }
                 }
+                else {
+                  setShowMoaiIntro(false)
+                }
 
                 setTheme(nextTheme)
               }}
@@ -592,7 +662,7 @@ function App() {
           </div>
         </div>
 
-        {showMoaiIntro && (
+        {showMoaiIntro && theme === 'brainrot' && (
           <div
             className="moai-intro-overlay"
             aria-hidden="true"
@@ -774,7 +844,10 @@ function App() {
 
           <button
             className="back-button"
-            onClick={() => setScreen('title')}
+            onClick={() => {
+              setShowMoaiIntro(false)
+              setScreen('title')
+            }}
           >
             ← Back to title
           </button>
@@ -959,20 +1032,6 @@ function App() {
                     (move) => move.to === square,
                   )
 
-                  let symbol = ''
-
-                  if (piece) {
-                    const symbols = {
-                      wk: '♔', wq: '♕', wr: '♖',
-                      wb: '♗', wn: '♘', wp: '♙',
-                      bk: '♚', bq: '♛', br: '♜',
-                      bb: '♝', bn: '♞', bp: '♟',
-                    }
-
-                    symbol =
-                      symbols[`${piece.color}${piece.type}` as keyof typeof symbols]
-                  }
-
                   return (
                     <button
                       key={square}
@@ -1046,7 +1105,7 @@ function App() {
             <section className="hampter-card">
               <div className="hampter-heading">
                 <div>
-                  <p className="hampter-lable">YOUR OPPONENT</p>
+                  <p className="hampter-label">YOUR OPPONENT</p>
                   <h2>Hampter</h2>
                 </div>
                 <span className="hampter-status">
@@ -1068,7 +1127,69 @@ function App() {
               </div>
             </section>
           )}
+
+          <section className="captured-pieces">
+            <div className="captured-header">
+              <h2>Captured Pieces</h2>
+              <span>
+                {capturedByWhite.length + capturedByBlack.length} taken
+              </span>
+            </div>
+
+            <div className="captured-row">
+              <span className="captured-label">WHITE</span>
+
+              <div className="captured-piece-list">
+                {groupedCapturesByWhite.length > 0 ? (
+                  groupedCapturesByWhite.map(({ type, count }) => (
+                    <span
+                      className="captured-piece-group"
+                      key={`white-${type}`}
+                      title={`White captured ${count} black ${type}${count > 1 ? ' pieces' : ' piece'}`}
+                    >
+                      <span className="captured-piece-icon">
+                        <PaperPiece type={type} color="b" theme={theme} />
+                      </span>
+
+                      {count > 1 && (
+                        <span className="captured-piece-count">×{count}</span>
+                      )}
+                    </span>
+                  ))
+                ) : (
+                  <span className="captured-empty">No captures</span>
+                )}
+              </div>
+            </div>
+
+            <div className="captured-row">
+              <span className="captured-label">BLACK</span>
+
+              <div className="captured-piece-list">
+                {groupedCapturesByBlack.length > 0 ? (
+                  groupedCapturesByBlack.map(({ type, count }) => (
+                    <span
+                      className="captured-piece-group"
+                      key={`black-${type}`}
+                      title={`Black captured ${count} white ${type}${count > 1 ? ' pieces' : ' piece'}`}
+                    >
+                      <span className="captured-piece-icon">
+                        <PaperPiece type={type} color="w" theme={theme} />
+                      </span>
+
+                      {count > 1 && (
+                        <span className="captured-piece-count">×{count}</span>
+                      )}
+                    </span>
+                  ))
+                ) : (
+                  <span className="captured-empty">No captures</span>
+                )}
+              </div>
+            </div>
+          </section>
           <aside className="move-history">
+
             <div className="history-header">
               <h2>Move History</h2>
               <span>{history.length} moves</span>
