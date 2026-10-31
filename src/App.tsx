@@ -43,9 +43,13 @@ function App() {
   const [musicVolume, setMusicVolume] = useState(35)
 
   const bgMusicRef = useRef<HTMLAudioElement | null>(null)
+  const teamAudioRef = useRef<HTMLAudioElement | null>(null)
+  const teamHoverSoundPLayedRef = useRef(false)
   const [moveAnimations, setMoveAnimations] = useState(true)
   const [legalHints, setLegalHints] = useState(true)
   const [showCoordinates, setShowCoordinates] = useState(true)
+  const moaiPlayedRef = useRef(false)
+  const [showMoaiIntro, setShowMoaiIntro] = useState(false)
 
   const [selected, setSelected] = useState<Square | null>(null)
 
@@ -147,11 +151,18 @@ function App() {
   function playTeamSound(team: 'tungtung' | 'quandale') {
     if (theme !== 'brainrot') return
 
+    //to prevent replaying of audio 
+    if (teamAudioRef.current && !teamAudioRef.current.ended) {
+      return
+    }
+
     const audio = new Audio(
       `/audio/brainrot/team-${team}.mp3`
     )
 
     audio.volume = (masterVolume / 100) * (moveVolume / 100)
+
+    teamAudioRef.current = audio
 
     audio.play().catch((error) => {
       console.warn(`Could not play ${team} team sound:`, error)
@@ -546,15 +557,65 @@ function App() {
             <select
               id="theme-select"
               value={theme}
-              onChange={(event) =>
-                setTheme(event.target.value as 'default' | 'brainrot')
-              }
+              onChange={(event) => {
+                const nextTheme = event.target.value as 'default' | 'brainrot'
+
+                if (nextTheme === 'brainrot') {
+                  let hasPlayed = moaiPlayedRef.current
+
+                  try {
+                    hasPlayed =
+                      sessionStorage.getItem('paper-chess-moai-played') === 'true'
+                  } catch {
+                    // Use the component-level ref if sessionStorage is unavailable.
+                  }
+
+                  if (!hasPlayed) {
+                    moaiPlayedRef.current = true
+
+                    try {
+                      sessionStorage.setItem('paper-chess-moai-played', 'true')
+                    } catch {
+                      // The ref still prevents replay during this app session.
+                    }
+
+                    setShowMoaiIntro(true)
+                  }
+                }
+
+                setTheme(nextTheme)
+              }}
             >
               <option value="default">Default</option>
               <option value="brainrot">Brainrot</option>
             </select>
           </div>
         </div>
+
+        {showMoaiIntro && (
+          <div
+            className="moai-intro-overlay"
+            aria-hidden="true"
+            onAnimationEnd={(event) => {
+              if (event.target === event.currentTarget) {
+                setShowMoaiIntro(false)
+              }
+            }}
+          >
+            <div className="moai-intro-moai">🗿</div>
+            <div className="moai-impact-dust">
+              <span className="particle-1" />
+              <span className="particle-2" />
+              <span className="particle-3" />
+              <span className="particle-4" />
+              <span className="particle-5" />
+              <span className="particle-6" />
+            </div>
+            <p className="moai-intro-caption">
+              THE BRAINROT HAS ARRIVED.
+            </p>
+          </div>
+        )}
       </main>
     )
   }
@@ -577,7 +638,12 @@ function App() {
               {theme === 'brainrot' ? 'CHOOSE YOUR TEAM' : 'CHOOSE YOUR SIDE'}
             </p>
 
-            <div className="side-options">
+            <div
+              className="side-options"
+              onMouseLeave={() => {
+                teamHoverSoundPLayedRef.current = false
+              }}
+            >
               <button
                 type="button"
                 className={`title-button ${playerColor === 'w'
