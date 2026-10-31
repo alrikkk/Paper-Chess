@@ -12,6 +12,23 @@ function App() {
 
   const [gameMode, setGameMode] = useState<'two-player' | 'bot'>('two-player')
   const [theme, setTheme] = useState<'default' | 'brainrot'>('default')
+  const [showPieceGuide, setShowPieceGuide] = useState(false)
+  /* Characters */
+
+  const brainrotCharacters = [
+    { name: 'Triple T', piece: 'KING', color: 'WHITE', image: 'white-king.png' },
+    { name: 'Quandale Dingle', piece: 'KING', color: 'BLACK', image: 'black-king.png' },
+    { name: 'Bellarina Cappucinno', piece: 'QUEEN', color: 'WHITE', image: 'white-queen.png' },
+    { name: 'Giga Chad', piece: 'QUEEN', color: 'BLACK', image: 'black-queen.png' },
+    { name: 'Brr Brr Patapim', piece: 'ROOK', color: 'WHITE', image: 'white-rook.png' },
+    { name: 'John Pork', piece: 'ROOK', color: 'BLACK', image: 'black-rook.png' },
+    { name: 'Trallalero Tralala', piece: 'BISHOP', color: 'WHITE', image: 'white-bishop.png' },
+    { name: 'Jamaican LeBron James', piece: 'BISHOP', color: 'BLACK', image: 'black-bishop.png' },
+    { name: 'Chimpanzini Bananini', piece: 'KNIGHT', color: 'WHITE', image: 'white-knight.png' },
+    { name: 'Freaky Apple', piece: 'KNIGHT', color: 'BLACK', image: 'black-knight.png' },
+    { name: 'Cappuccino Assassino', piece: 'PAWN', color: 'WHITE', image: 'white-pawn.png' },
+    { name: 'Among Us', piece: 'PAWN', color: 'BLACK', image: 'black-pawn.png' },
+  ]
   const [playerColor, setPlayerColor] = useState<'w' | 'b'>('w')
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy')
   const [botThinking, setBotThinking] = useState(false)
@@ -59,10 +76,12 @@ function App() {
 
     if (!audio) return
 
-    const targetVolume = screen === 'title' ? (masterVolume / 100) * (musicVolume / 100) : 0
-    if (screen === 'title') {
+    const shouldPlayMusic = screen !== 'game'
+    const targetVolume = shouldPlayMusic ? (masterVolume / 100) * (masterVolume / 100) : 0
+
+    if (shouldPlayMusic) {
       audio.play().catch((error) => {
-        console.warn('Background music could not start:', error)
+        console.warn('Background Music Could Not Start', error)
       })
     }
 
@@ -89,7 +108,6 @@ function App() {
       window.clearInterval(fadeInterval)
     }
   }, [screen, masterVolume, musicVolume])
-
 
   const history = chess.history()
   const legalMoves =
@@ -720,7 +738,7 @@ function App() {
                     >
                       {piece ? (
                         draggingFrom !== square && (
-                          <PaperPiece type={piece.type} color={piece.color} />
+                          <PaperPiece type={piece.type} color={piece.color} theme={theme} />
                         )
                       ) : null}
                     </button>
@@ -745,6 +763,7 @@ function App() {
                     <PaperPiece
                       type={draggedPiece.type}
                       color={draggedPiece.color}
+                      theme={theme}
                     />
                   </div>
                 )
@@ -788,6 +807,16 @@ function App() {
             )}
           </aside>
 
+          {theme === 'brainrot' && (
+            <button
+              type="button"
+              className="piece-guide-button"
+              onClick={() => setShowPieceGuide(true)}
+            >
+              ♟  VIEW PIECE GUIDE
+            </button>
+          )}
+
           <footer className="game-footer">
             <span>
               {botThinking
@@ -830,6 +859,58 @@ function App() {
           </footer>
         </div>
       </div>
+      {showPieceGuide && theme === 'brainrot' && (
+        <div
+          className="piece-guide-overlay"
+          onClick={() => setShowPieceGuide(false)}
+        >
+          <section
+            className="piece-guide-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="piece-guide-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className='piece-guide-header'>
+              <div>
+                <p className="eyebrow">THE CHARACTER ENCYCLOPEDIA</p>
+                <h2 id="piece-guide-title"> The Brainrot Codex</h2>
+                <p> Meet the characters behind every move.</p>
+              </div>
+
+              <button
+                type="button"
+                className="piece-guide-close"
+                onClick={() => setShowPieceGuide(false)}
+                aria-label="Close Piece Guide"
+              >
+                x
+              </button>
+            </header>
+
+            <div className="piece-guide-grid">
+              {brainrotCharacters.map((character) => (
+                <article
+                  className="piece-guide-card"
+                  key={character.image}
+                >
+                  <div className="piece-guide-image">
+                    <img
+                      src={`/pieces/brainrot/${character.image}`}
+                      alt={character.name}
+                    />
+                  </div>
+
+                  <div className="piece-guide-info">
+                    <span>{character.color} {character.piece}</span>
+                    <h3>{character.name}</h3>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
     </main>
   )
 }
