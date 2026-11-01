@@ -6,14 +6,14 @@
 
 Hi , I built this chess game for the Stardance Challenge , I hope you like my game :) 
 
-Paper chess is game with a little twist, the idea was to go for a paper-ish theme and i tired my best to do that and i think it turned out well ( ihope). I got board of looking at the same old wood board design and though this would be a fun project to ship.
+Paper chess is game with a little twist, the idea was to go for a paper-ish theme and i tired my best to do that and i think it turned out well ( ihope). I got board of looking at the same old wood bored design and thought this would be a fun project to ship.
 
 I built this project as part of **Stardance**, focusing on making a classic chess game feel a bit more creative and fun to play.
 
 ## Features
 
 - Play chess with a friend or against the bot.
-- Custom paper-cutout chess pieces.
+- Paper-cutout chess pieces.
 - Multiple themes, including the Brainrot theme.
 - Sound effects and background music.
 - Move history and captured-piece tracking.
