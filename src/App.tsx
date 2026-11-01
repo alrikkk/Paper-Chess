@@ -1,4 +1,4 @@
-
+/* Beep beep boop boop */
 import { useEffect, useRef, useState } from 'react'
 import { chess, getLegalMoves, movePiece, undoMove, resetGame } from './game/chessState'
 import type { Square } from 'chess.js'
@@ -42,19 +42,18 @@ function App() {
     { name: 'Cappuccino Assassino', piece: 'PAWN', color: 'WHITE', image: 'white-pawn.webp' },
     { name: 'Among Us', piece: 'PAWN', color: 'BLACK', image: 'black-pawn.webp' },
   ]
+
+  /* great wall of const */
   const [playerColor, setPlayerColor] = useState<'w' | 'b'>('w')
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy')
   const [botThinking, setBotThinking] = useState(false)
   const [botError, setBotError] = useState<string | null>(null)
-
   type HampterMood = 'idle' | 'thinking' | 'wins' | 'loses'
-
   const [hampterMood, setHampterMood] = useState<HampterMood>('idle')
   const [hampterMessage, setHampterMessage] = useState('')
   const [masterVolume, setMasterVolume] = useState(70)
   const [moveVolume, setMoveVolume] = useState(60)
   const [musicVolume, setMusicVolume] = useState(35)
-
   const bgMusicRef = useRef<HTMLAudioElement | null>(null)
   const teamAudioRef = useRef<HTMLAudioElement | null>(null)
   const teamHoverSoundPLayedRef = useRef(false)
@@ -63,7 +62,6 @@ function App() {
   const [showCoordinates, setShowCoordinates] = useState(true)
   const moaiPlayedRef = useRef(false)
   const [showMoaiIntro, setShowMoaiIntro] = useState(false)
-
   const [selected, setSelected] = useState<Square | null>(null)
 
   type PromotionPiece = 'q' | 'r' | 'b' | 'n'
