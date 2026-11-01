@@ -29,18 +29,18 @@ function App() {
   /* Characters */
 
   const brainrotCharacters = [
-    { name: 'Triple T', piece: 'KING', color: 'WHITE', image: 'white-king.png' },
-    { name: 'Quandale Dingle', piece: 'KING', color: 'BLACK', image: 'black-king.png' },
-    { name: 'Bellarina Cappucinno', piece: 'QUEEN', color: 'WHITE', image: 'white-queen.png' },
-    { name: 'Giga Chad', piece: 'QUEEN', color: 'BLACK', image: 'black-queen.png' },
-    { name: 'Brr Brr Patapim', piece: 'ROOK', color: 'WHITE', image: 'white-rook.png' },
-    { name: 'John Pork', piece: 'ROOK', color: 'BLACK', image: 'black-rook.png' },
-    { name: 'Trallalero Tralala', piece: 'BISHOP', color: 'WHITE', image: 'white-bishop.png' },
-    { name: 'Jamaican LeBron James', piece: 'BISHOP', color: 'BLACK', image: 'black-bishop.png' },
-    { name: 'Chimpanzini Bananini', piece: 'KNIGHT', color: 'WHITE', image: 'white-knight.png' },
-    { name: 'Freaky Apple', piece: 'KNIGHT', color: 'BLACK', image: 'black-knight.png' },
-    { name: 'Cappuccino Assassino', piece: 'PAWN', color: 'WHITE', image: 'white-pawn.png' },
-    { name: 'Among Us', piece: 'PAWN', color: 'BLACK', image: 'black-pawn.png' },
+    { name: 'Triple T', piece: 'KING', color: 'WHITE', image: 'white-king.webp' },
+    { name: 'Quandale Dingle', piece: 'KING', color: 'BLACK', image: 'black-king.webp' },
+    { name: 'Bellarina Cappucinno', piece: 'QUEEN', color: 'WHITE', image: 'white-queen.webp' },
+    { name: 'Giga Chad', piece: 'QUEEN', color: 'BLACK', image: 'black-queen.webp' },
+    { name: 'Brr Brr Patapim', piece: 'ROOK', color: 'WHITE', image: 'white-rook.webp' },
+    { name: 'John Pork', piece: 'ROOK', color: 'BLACK', image: 'black-rook.webp' },
+    { name: 'Trallalero Tralala', piece: 'BISHOP', color: 'WHITE', image: 'white-bishop.webp' },
+    { name: 'Jamaican LeBron James', piece: 'BISHOP', color: 'BLACK', image: 'black-bishop.webp' },
+    { name: 'Chimpanzini Bananini', piece: 'KNIGHT', color: 'WHITE', image: 'white-knight.webp' },
+    { name: 'Freaky Apple', piece: 'KNIGHT', color: 'BLACK', image: 'black-knight.webp' },
+    { name: 'Cappuccino Assassino', piece: 'PAWN', color: 'WHITE', image: 'white-pawn.webp' },
+    { name: 'Among Us', piece: 'PAWN', color: 'BLACK', image: 'black-pawn.webp' },
   ]
   const [playerColor, setPlayerColor] = useState<'w' | 'b'>('w')
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy')
@@ -587,7 +587,7 @@ function App() {
 
           <img
             className="title-logo"
-            src="/paper-chess-logo.png"
+            src="/paper-chess-logo.webp"
             alt="Paper Chess"
           />
 
