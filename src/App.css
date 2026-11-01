@@ -119,9 +119,9 @@ input[type='range'] {
 
 .title-logo {
   display: block;
-  width: min(100%, 460px);
+  width: min(100%, 360px);
   height: auto;
-  max-height: 290px;
+  max-height: 240px;
   object-fit: contain;
   mix-blend-mode: multiply;
 }
@@ -216,7 +216,7 @@ input[type='range'] {
   opacity: 0.8;
 }
 
-.title-screen .mode-actions + .title-button {
+.title-screen .mode-actions+.title-button {
   margin-top: 18px;
 }
 
@@ -726,7 +726,7 @@ input[type='range'] {
   color: var(--text-main);
 }
 
-.captured-header > span {
+.captured-header>span {
   color: var(--accent-terracotta-dark);
   font-family: var(--font-mono);
   font-size: 10px;
@@ -742,7 +742,7 @@ input[type='range'] {
   padding: 4px 0;
 }
 
-.captured-row + .captured-row {
+.captured-row+.captured-row {
   margin-top: 6px;
   padding-top: 8px;
   border-top: 1px solid var(--border-light);
@@ -1078,7 +1078,7 @@ input[type='range'] {
   margin-top: 0;
 }
 
-.game-sidebar .game-footer > span {
+.game-sidebar .game-footer>span {
   display: block;
   width: 100%;
   padding: 9px 12px;
@@ -1167,7 +1167,7 @@ input[type='range'] {
   font-size: clamp(24px, 5vw, 32px);
 }
 
-.promotion-modal > p:not(.eyebrow) {
+.promotion-modal>p:not(.eyebrow) {
   margin: 10px 0 22px;
   color: var(--text-muted);
   font-size: 11px;
@@ -1260,12 +1260,35 @@ input[type='range'] {
   animation: moai-particle 850ms ease-out 650ms forwards;
 }
 
-.moai-impact-dust .particle-1 { --x: -110px; --y: -65px; }
-.moai-impact-dust .particle-2 { --x: 100px; --y: -85px; }
-.moai-impact-dust .particle-3 { --x: -75px; --y: 35px; }
-.moai-impact-dust .particle-4 { --x: 125px; --y: 30px; }
-.moai-impact-dust .particle-5 { --x: -25px; --y: -115px; }
-.moai-impact-dust .particle-6 { --x: 35px; --y: 95px; }
+.moai-impact-dust .particle-1 {
+  --x: -110px;
+  --y: -65px;
+}
+
+.moai-impact-dust .particle-2 {
+  --x: 100px;
+  --y: -85px;
+}
+
+.moai-impact-dust .particle-3 {
+  --x: -75px;
+  --y: 35px;
+}
+
+.moai-impact-dust .particle-4 {
+  --x: 125px;
+  --y: 30px;
+}
+
+.moai-impact-dust .particle-5 {
+  --x: -25px;
+  --y: -115px;
+}
+
+.moai-impact-dust .particle-6 {
+  --x: 35px;
+  --y: 95px;
+}
 
 .moai-intro-caption {
   position: absolute;
@@ -1279,33 +1302,86 @@ input[type='range'] {
 }
 
 @keyframes moai-drop {
-  0% { transform: translateY(-120vh) rotate(-10deg); }
-  55% { transform: translateY(0) rotate(3deg); }
-  65% { transform: translateY(-18px) rotate(-2deg); }
-  75% { transform: translateY(0) rotate(0); }
-  100% { transform: translateY(25px) scale(0.85); opacity: 0; }
+  0% {
+    transform: translateY(-120vh) rotate(-10deg);
+  }
+
+  55% {
+    transform: translateY(0) rotate(3deg);
+  }
+
+  65% {
+    transform: translateY(-18px) rotate(-2deg);
+  }
+
+  75% {
+    transform: translateY(0) rotate(0);
+  }
+
+  100% {
+    transform: translateY(25px) scale(0.85);
+    opacity: 0;
+  }
 }
 
 @keyframes moai-dust {
-  0%, 50% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
-  65% { opacity: 1; transform: translate(-50%, -50%) scale(1.5); }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(5); }
+
+  0%,
+  50% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2);
+  }
+
+  65% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.5);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(5);
+  }
 }
 
 @keyframes moai-particle {
-  0% { opacity: 1; transform: translate(0, 0) scale(1); }
-  100% { opacity: 0; transform: translate(var(--x), var(--y)) scale(0.3) rotate(180deg); }
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(var(--x), var(--y)) scale(0.3) rotate(180deg);
+  }
 }
 
 @keyframes moai-caption {
-  0%, 55% { opacity: 0; }
-  65%, 80% { opacity: 1; }
-  100% { opacity: 0; }
+
+  0%,
+  55% {
+    opacity: 0;
+  }
+
+  65%,
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }
 
 @keyframes moai-overlay-out {
-  0%, 75% { opacity: 1; }
-  100% { opacity: 0; }
+
+  0%,
+  75% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }
 
 /* ==========================================================================
@@ -1376,7 +1452,7 @@ input[type='range'] {
     gap: 8px;
   }
 
-  .game-sidebar .game-footer > span {
+  .game-sidebar .game-footer>span {
     grid-column: 1 / -1;
   }
 
@@ -1466,6 +1542,11 @@ input[type='range'] {
     gap: 8px;
   }
 
+  .title-logo {
+    width: min(100%, 280px);
+    max-height: 190px;
+  }
+
   .captured-piece-group {
     width: 36px;
     height: 36px;
@@ -1546,6 +1627,7 @@ input[type='range'] {
 
 /* Reduced Motion Accessibility */
 @media (prefers-reduced-motion: reduce) {
+
   .title-button,
   .game button:not(.square),
   .paper-piece,

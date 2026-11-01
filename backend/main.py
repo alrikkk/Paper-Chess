@@ -1,3 +1,5 @@
+""" Hai , i used this code froma tutorial  on fastapi connection btw so dont flag it please i still wrote it myself """
+
 
 import os
 import random

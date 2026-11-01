@@ -579,22 +579,17 @@ function App() {
     return 'ALIVE'
   }
 
+  /* leon kennedy is hot , fix ui bug for paper chess title in game screen -- */
+
   if (screen === 'title') {
     return (
       <main className="title-screen">
         <div className="title-paper">
-          <p className="title-eyebrow">A LITTLE GAME OF STRATEGY</p>
-
           <img
             className="title-logo"
             src="/paper-chess-logo.webp"
             alt="Paper Chess"
           />
-
-          <p className="title-subtitle">
-            A handmade kingdom, one move at a time.
-          </p>
-
           <div className="title-actions">
             <button
               className={
@@ -618,10 +613,6 @@ function App() {
               Settings
             </button>
           </div>
-
-          <p className="title-footer">
-            CRAFTED ON PAPER · PLAYED IN STRATEGY
-          </p>
 
           <div className="theme-selector">
             <label htmlFor="theme-select">THEME</label>
@@ -699,13 +690,7 @@ function App() {
     return (
       <main className="title-screen">
         <div className="title-paper">
-          <p className="title-eyebrow">CHOOSE YOUR OPPONENT</p>
-
           <h1 className="mode-heading">How will you play?</h1>
-
-          <p className="title-subtitle">
-            Every kingdom needs a worthy opponent.
-          </p>
 
 
           <div className="side-selection">
@@ -728,12 +713,9 @@ function App() {
                 onMouseEnter={() => playTeamSound('tungtung')}
               >
                 {theme === 'brainrot' ? 'Team Tung Tung' : 'White'}
-                <span className="mode-description">
-                  {theme === 'brainrot'
-                    ? 'Lead the Tung Tung squad.'
-                    : "Play from White's side"}
-                </span>
               </button>
+
+              {/* yo gng dont slack */}
 
               <button
                 type="button"
@@ -744,11 +726,6 @@ function App() {
                 onMouseEnter={() => playTeamSound('quandale')}
               >
                 {theme === 'brainrot' ? 'Team Quandale' : 'Black'}
-                <span className="mode-description">
-                  {theme === 'brainrot'
-                    ? 'Join the Quandale squad.'
-                    : "Play from Black's side"}
-                </span>
               </button>
             </div>
           </div>
@@ -792,9 +769,6 @@ function App() {
                 }}
               >
                 You vs You
-                <span className="mode-description">
-                  Two sides. Your strategy.
-                </span>
               </button>
             )}
 
@@ -804,9 +778,6 @@ function App() {
                 onClick={() => setGameMode('two-player')}
               >
                 You vs You
-                <span className="mode-description">
-                  Two sides. Your strategy.
-                </span>
               </button>
             )}
 
@@ -819,9 +790,6 @@ function App() {
               onClick={() => setGameMode('bot')}
             >
               You vs Bot
-              <span className="mode-description">
-                Challenge the machine.
-              </span>
             </button>
           </div>
 
@@ -865,13 +833,8 @@ function App() {
     return (
       <main className="title-screen">
         <div className="title-paper settings-paper">
-          <p className="title-eyebrow">MAKE IT YOUR OWN</p>
-
           <h1 className="mode-heading">Settings</h1>
 
-          <p className="title-subtitle">
-            Settle in. Make yourself comfortable.
-          </p>
 
           <div className="settings-list">
             <label className="setting-row">
@@ -985,14 +948,12 @@ function App() {
     )
   }
 
+  /* Continue here tmmr */
+
   return (
     <main className="game">
       <header className="game-header">
-        <p className="eyebrow">A LITTLE GAME OF STRATEGY</p>
         <h1>Paper Chess<span>.</span></h1>
-        <p className="subtitle">
-          A handmade kingdom, one move at a time.
-        </p>
       </header>
 
       <div className={`game-layout ${gameMode === 'bot' && playerColor === 'b' ? 'player-black' : ''
@@ -1110,7 +1071,7 @@ function App() {
             <section className="hampter-card">
               <div className="hampter-heading">
                 <div>
-                  <p className="hampter-label">YOUR OPPONENT</p>
+                  <p className="hampter-label">OPPONENT</p>
                   <h2>Hampter</h2>
                 </div>
                 <span className="hampter-status">
@@ -1283,7 +1244,6 @@ function App() {
           >
             <p className="eyebrow"> A NEW CHAPTER</p>
             <h2 id="promotion-title">Choose your promotion</h2>
-            <p> Your pawn has reached the other side.</p>
 
             <div className="promotion-options">
               {([
@@ -1324,9 +1284,8 @@ function App() {
           >
             <header className='piece-guide-header'>
               <div>
-                <p className="eyebrow">THE CHARACTER ENCYCLOPEDIA</p>
-                <h2 id="piece-guide-title"> The Brainrot Codex</h2>
-                <p> Meet the characters behind every move.</p>
+                <p className="eyebrow">~CHARACTER ENCYCLOPEDIA~</p>
+                <h2 id="piece-guide-title"> Brainrot Codex</h2>
               </div>
 
               <button
