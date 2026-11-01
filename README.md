@@ -15,7 +15,7 @@ I built this project as part of **Stardance**, focusing on making a classic ches
 - Play chess with a friend or against the bot.
 - Custom paper-cutout chess pieces.
 - Multiple themes, including the Brainrot theme.
-- Custom sound effects and background music.
+- Sound effects and background music.
 - Move history and captured-piece tracking.
 - Adjustable settings and a custom game interface.
 
