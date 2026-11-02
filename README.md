@@ -6,9 +6,9 @@
 
 Hi , I built this chess game for the Stardance Challenge , I hope you like my game :) 
 
-Paper chess is game with a little twist, the idea was to go for a paper-ish theme and i tired my best to do that and i think it turned out well ( ihope). I got board of looking at the same old wood bored design and thought this would be a fun project to ship.
+Paper chess is game with a little twist, the idea was to go for a paper-ish theme and i tired my best to do that and i think it turned out well ( ihope). I got bored of looking at the same old wood bored design and thought this would be a fun project to ship.
 
-I built this project as part of **Stardance**, focusing on making a classic chess game feel a bit more creative and fun to play.
+I built this project as part of **Stardance**, focusing on making a classic chess game feel a bit more creative and fun to play with brainrot ;) idk personal suggestion.
 
 ## Features
 
@@ -91,4 +91,4 @@ Thanks for checking it out!
 <img width="1483" height="808" alt="Screenshot 2026-11-02 at 1 53 13 PM" src="https://github.com/user-attachments/assets/1dfab38c-508c-4102-b0de-715ec6c85f23" />
 
 ## Small Note
-*there are two themes btw Default and brainrot, would recommend try out both.
+*there are two themes btw Default and brainrot, would recommend trying out both.
