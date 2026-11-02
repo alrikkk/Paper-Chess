@@ -70,29 +70,25 @@ Thanks for checking it out!
 
 ## Preview -
 
-<img width="1512" height="831" alt="Screenshot 2026-11-01 at 4 25 42 AM" src="https://github.com/user-attachments/assets/df5aaccd-aad7-494f-8770-5f5ba7a75a09" />
+<img width="1512" height="825" alt="Screenshot 2026-11-02 at 1 53 46 PM" src="https://github.com/user-attachments/assets/79f6d10d-333d-4c1b-8533-4a8348502d5f" />
 
 
 
-<img width="1512" height="827" alt="Screenshot 2026-11-01 at 4 26 03 AM" src="https://github.com/user-attachments/assets/55ee690e-7579-4d74-a475-92846d27ef06" />
-
-
-
-<img width="1512" height="822" alt="Screenshot 2026-11-01 at 4 26 55 AM" src="https://github.com/user-attachments/assets/ec449f57-81e1-48a7-a9f4-c835e7eab492" />
-
+<img width="1511" height="827" alt="Screenshot 2026-11-02 at 1 54 14 PM" src="https://github.com/user-attachments/assets/19fb2348-df8b-40dc-84b4-dfbe97be3c37" />
 
 
 ## Whimsy - 
 
 
-<img width="407" height="211" alt="Screenshot 2026-11-01 at 3 12 10 AM" src="https://github.com/user-attachments/assets/c56eaf81-63d3-43cf-8f87-482b46931b04" />  
-
-<img width="404" height="216" alt="Screenshot 2026-11-01 at 3 34 07 AM" src="https://github.com/user-attachments/assets/f314487e-df9a-4392-aede-55c4a50e5f0d" />
-
-
-<img width="405" height="253" alt="Screenshot 2026-11-01 at 3 34 14 AM" src="https://github.com/user-attachments/assets/ac385fe7-c599-4229-92a0-e5ba9210d3b3" />
+<img width="353" height="190" alt="Screenshot 2026-11-02 at 1 52 31 PM" src="https://github.com/user-attachments/assets/854132b5-742e-4b33-a6e9-43be66cac99c" />
 
 
 
-<img width="1512" height="829" alt="Screenshot 2026-11-01 at 3 34 59 AM" src="https://github.com/user-attachments/assets/93946ad9-7f73-4056-9aa7-9a873326ed0c" />
+<img width="1512" height="823" alt="Screenshot 2026-11-02 at 1 52 53 PM" src="https://github.com/user-attachments/assets/73e410e1-8141-44e7-add2-e1fcbb367e0c" />
 
+
+
+<img width="1483" height="808" alt="Screenshot 2026-11-02 at 1 53 13 PM" src="https://github.com/user-attachments/assets/1dfab38c-508c-4102-b0de-715ec6c85f23" />
+
+## Small Note
+*there are two themes btw Default and brainrot, would recommend try out both.
