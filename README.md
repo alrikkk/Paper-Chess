@@ -4,7 +4,7 @@
 # Paper Chess 
 # version 1.0
 
-Hi , I built this chess game for the Stardance Challenge , I hope you like my game :) 
+Hi , I built this chess game for fun cause i got bored with standar board chess games, I hope you like my game :) 
 
 Paper chess is game with a little twist, the idea was to go for a paper-ish theme and i tired my best to do that and i think it turned out well ( ihope). I got bored of looking at the same old wood bored design and thought this would be a fun project to ship.
 
